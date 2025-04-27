@@ -1,0 +1,31 @@
+<meta property="og:title" content="Reconnect | Quiz" />
+<meta
+  property="og:image"
+  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
+/>
+<meta
+  property="og:description"
+  content="The Student Network. Connecting students in and outside the classroom."
+/>
+{% extends "base.html" %} {% block title %}Quiz Results{% endblock %} {% block
+content %}
+<!-- when writing the for loop, use the whole ui segment instead of just "sixteen wide column" -->
+<div class="ui segment">
+  {% for question in question_feedback %} {%if question[1] == question[2]%}
+  <div class="ui message green">
+    <div class="header">{{question[0]}}</div>
+    <div class="detail">{{question[2]}}</div>
+    <div class="detail">Correct</div>
+  </div>
+  {%endif%} {%if question[1] != question[2]%}
+  <div class="ui message red">
+    <div class="header">{{question[0]}}</div>
+    <div class="detail">Your answer: {{question[1]}}</div>
+    <div class="detail">Correct Answer: {{question[2]}}</div>
+  </div>
+  {%endif%} {%endfor%}
+
+  <h2>Score: {{score}} / {{question_feedback | length}} ({{percentage}}%)</h2>
+  <a href="/quizzes">Back to Quiz Page</a>
+</div>
+{%endblock%}

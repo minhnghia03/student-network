@@ -1,0 +1,136 @@
+<meta property="og:title" content="Reconnect | Members" />
+<meta
+  property="og:image"
+  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
+/>
+<meta
+  property="og:description"
+  content="The Student Network. Connecting students in and outside the classroom."
+/>
+{% extends "base.html" %} {% block title %}Members{% endblock %} {% block
+content %}
+
+<div class="ui segment padded">
+  <div class="ui grid stackable">
+    <div class="sixteen wide column">
+      <div class="field">
+        <div class="ui left icon input fluid">
+          <label for="userInput"></label
+          ><input
+            type="text"
+            placeholder="Search users..."
+            id="userInput"
+            oninput="SearchUser();"
+          />
+          <i class="users icon"></i>
+        </div>
+      </div>
+    </div>
+    <div class="seven wide column">
+      <div class="ui input fluid labeled">
+        <div class="ui label teal">Search Hobby</div>
+        <label for="hobbyInput"></label
+        ><input
+          type="text"
+          placeholder="Search for common hobby..."
+          id="hobbyInput"
+          oninput="SearchUser();"
+        />
+      </div>
+    </div>
+    <div class="ui two wide column">
+      <div class="ui label fluid green big" style="text-align: center">AND</div>
+    </div>
+    <div class="seven wide column">
+      <div class="ui input fluid labeled">
+        <div class="ui label purple">Search Interest</div>
+        <label for="interestInput"></label
+        ><input
+          type="text"
+          placeholder="Search for common interest..."
+          id="interestInput"
+          oninput="SearchUser();"
+        />
+      </div>
+    </div>
+
+    <div class="sixteen wide column">
+      <div class="ui list large" id="users"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function SearchUser() {
+    let xhttp;
+    let username = document.getElementById("userInput").value;
+
+    if (username === "") {
+      document.getElementById("users").innerHTML = "";
+    }
+
+    xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        let json_response = JSON.parse(this.response);
+        console.log(json_response);
+
+        document.getElementById("users").innerHTML = "";
+
+        let hobby = document.getElementById("hobbyInput").value;
+        let interest = document.getElementById("interestInput").value;
+
+        if (username === "" && hobby === "" && interest === "") {
+          return;
+        }
+
+        for (let user of json_response) {
+          let extra = ``;
+
+          let hobbyOrInterest = false;
+
+          if (user[1] != null && hobby !== "") {
+            extra += `<div class="description">Likes: <b>${user[1]}</b></div>`;
+            hobbyOrInterest = true;
+          }
+          if (user[2] != null && interest !== "") {
+            extra += `<div class="description">Interested in: <b>${user[2]}</b></div>`;
+            hobbyOrInterest = true;
+          }
+
+          if (!hobbyOrInterest) {
+            extra = `<div class="description">Studying ${user[4]}</div>`;
+          }
+
+          let html = `<div class="item">
+                                    <img class="ui avatar image" src="${user[3]}" alt="">
+                                    <div class="content">
+                                      <a class="header" href="./profile/${user[0]}">${user[0]}</a>
+                                      ${extra}
+                                    </div>
+                                  </div>`;
+
+          document.getElementById("users").innerHTML += html;
+        }
+      }
+    };
+
+    let hobby = document.getElementById("hobbyInput").value;
+    let interest = document.getElementById("interestInput").value;
+
+    console.log(hobby, interest);
+
+    xhttp.open(
+      "GET",
+      "search_query?chars=" +
+        username +
+        "&hobby=" +
+        hobby +
+        "&interest=" +
+        interest
+    );
+    xhttp.send();
+  }
+</script>
+
+{%endblock%}
