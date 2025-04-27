@@ -5,14 +5,14 @@ Handles the view for user profiles and related functionality.
 import sqlite3
 from datetime import datetime
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_login as helper_login
-import student_network.helpers.helper_profile as helper_profile
-import student_network.helpers.helper_posts as helper_posts
-import student_network.helpers.helper_flashcards as helper_flashcards
-import student_network.helpers.helper_quizzes as helper_quizzes
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_login as helper_login
+import helpers.helper_profile as helper_profile
+import helpers.helper_posts as helper_posts
+import helpers.helper_flashcards as helper_flashcards
+import helpers.helper_quizzes as helper_quizzes
 from flask import Blueprint, redirect, render_template, request, session
 
 profile_blueprint = Blueprint(
@@ -508,8 +508,7 @@ def edit_profile() -> object:
                 if hobbies != [""]:
                     for hobby in hobbies:
                         cur.execute(
-                            "SELECT hobby FROM UserHobby WHERE "
-                            "username=? AND hobby=?;",
+                            "SELECT hobby FROM UserHobby WHERE username=? AND hobby=?;",
                             (
                                 username,
                                 hobby,
@@ -606,8 +605,7 @@ def edit_socials() -> object:
         for key, value in socials.items():
             if value != "":
                 cur.execute(
-                    "INSERT INTO UserSocial (username, social, link) "
-                    "VALUES (?, ?, ?);",
+                    "INSERT INTO UserSocial (username, social, link) VALUES (?, ?, ?);",
                     (session["username"], key, value),
                 )
 

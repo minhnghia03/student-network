@@ -1,13 +1,14 @@
 """
 Performs checks and actions to help the achievements system work effectively.
 """
+
 import os
 import sqlite3
 from datetime import date
 from typing import Sized, Tuple
 
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_general as helper_general
+import helpers.helper_profile as helper_profile
 from flask import session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,9 +44,7 @@ def apply_achievement(username: str, achievement_id: int):
             exp = cur.fetchone()[0]
             helper_general.check_level_exists(username, conn)
             cur.execute(
-                "UPDATE UserLevel "
-                "SET experience = experience + ? "
-                "WHERE username=?;",
+                "UPDATE UserLevel SET experience = experience + ? WHERE username=?;",
                 (exp, username),
             )
             conn.commit()

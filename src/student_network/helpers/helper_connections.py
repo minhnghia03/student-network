@@ -1,11 +1,12 @@
 """
 Performs checks and actions to help user connections work effectively.
 """
+
 import os
 import sqlite3
 
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_general as helper_general
+import helpers.helper_profile as helper_profile
 from flask import session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

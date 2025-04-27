@@ -1,11 +1,12 @@
 """
 Handles the view for the chat system and related functionality.
 """
+
 import os
 
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_profile as helper_profile
 from flask import Blueprint, render_template
 from flask import session
 

@@ -5,10 +5,10 @@ Handles the view for user connections and related functionality.
 import sqlite3
 from datetime import date
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_profile as helper_profile
 from flask import Blueprint, redirect, render_template, request, session
 
 connections_blueprint = Blueprint(

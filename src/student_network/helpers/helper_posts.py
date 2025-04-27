@@ -1,6 +1,7 @@
 """
 Performs checks and actions to help the post system work effectively.
 """
+
 import os
 import re
 import sqlite3
@@ -8,10 +9,10 @@ import uuid
 from datetime import datetime
 from typing import Tuple
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_profile as helper_profile
 from flask import request, session
 from PIL import Image
 from werkzeug.utils import secure_filename

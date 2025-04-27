@@ -1,13 +1,14 @@
 """
 Performs checks and actions to help the general system work effectively.
 """
+
 import os
 import sqlite3
 from datetime import datetime
 from math import floor
 from typing import Tuple
 
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_profile as helper_profile
 from flask import session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -99,7 +100,7 @@ def get_notifications():
                     display_short_notification_age(
                         (
                             datetime.now()
-                            - datetime.strptime(x[1], "%Y-%m-%d " "%H:%M:%S")
+                            - datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S")
                         ).total_seconds()
                     ),
                     x[2],
@@ -169,7 +170,7 @@ def recent_message(date: str) -> Tuple[str, int]:
         [type]: [description]
     """
     seconds = (
-        datetime.now() - datetime.strptime(date, "%Y-%m-%d " "%H:%M:%S")
+        datetime.now() - datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
     ).total_seconds()
     elapsed = display_short_notification_age(seconds)
 
@@ -244,8 +245,7 @@ def new_notification(body, url):
         cur = conn.cursor()
 
         cur.execute(
-            "INSERT INTO notification (username, body, date, url) VALUES (?, "
-            "?, ?, ?);",
+            "INSERT INTO notification (username, body, date, url) VALUES (?, ?, ?, ?);",
             (session["username"], body, now.strftime("%Y-%m-%d %H:%M:%S"), url),
         )
 
@@ -259,8 +259,7 @@ def new_notification_username(username, body, url):
         cur = conn.cursor()
 
         cur.execute(
-            "INSERT INTO notification (username, body, date, url) VALUES (?, "
-            "?, ?, ?);",
+            "INSERT INTO notification (username, body, date, url) VALUES (?, ?, ?, ?);",
             (username, body, now.strftime("%Y-%m-%d %H:%M:%S"), url),
         )
 

@@ -1,13 +1,14 @@
 """
 Performs checks and actions to help the profile system work effectively.
 """
+
 import os
 import sqlite3
 import uuid
 from datetime import date, datetime
 from typing import List, Tuple
 
-import student_network.helpers.helper_general as helper_general
+import helpers.helper_general as helper_general
 from PIL import Image
 from werkzeug.utils import secure_filename
 

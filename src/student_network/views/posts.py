@@ -6,12 +6,12 @@ import re
 import sqlite3
 from datetime import datetime
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_login as helper_login
-import student_network.helpers.helper_posts as helper_posts
-import student_network.helpers.helper_profile as helper_profile
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_login as helper_login
+import helpers.helper_posts as helper_posts
+import helpers.helper_profile as helper_profile
 from flask import Blueprint, jsonify, redirect, render_template, request, session
 
 posts_blueprint = Blueprint(
@@ -80,8 +80,7 @@ def post(post_id: int) -> object:
                                 return render_template(
                                     "error.html",
                                     message=[
-                                        "This post is only available to close "
-                                        "friends."
+                                        "This post is only available to close friends."
                                     ],
                                     requestCount=helper_connections.get_connection_request_count(),
                                 )
@@ -346,8 +345,7 @@ def submit_post() -> object:
             if len(all_file_names) > 0:
                 for fileName in all_file_names_split:
                     cur.execute(
-                        "INSERT INTO PostContent (postId, contentUrl) "
-                        "VALUES (?, ?);",
+                        "INSERT INTO PostContent (postId, contentUrl) VALUES (?, ?);",
                         (
                             row_id,
                             fileName,

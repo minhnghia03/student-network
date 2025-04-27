@@ -7,9 +7,9 @@ from datetime import date
 from string import capwords
 
 import bcrypt
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_login as helper_login
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_login as helper_login
 from flask import Blueprint, redirect, render_template, request, session
 
 login_blueprint = Blueprint(

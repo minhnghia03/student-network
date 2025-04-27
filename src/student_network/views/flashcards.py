@@ -1,12 +1,13 @@
 """
 Handles the view for flashcards and related functionality.
 """
+
 import sqlite3
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_flashcards as helper_flashcards
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_flashcards as helper_flashcards
 from flask import Blueprint, json, redirect, render_template, request, session, jsonify
 
 

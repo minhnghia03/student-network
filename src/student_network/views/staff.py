@@ -4,7 +4,7 @@ Handles the view for staff administration tools and related functionality.
 
 import sqlite3
 
-import student_network.helpers.helper_connections as helper_connections
+import helpers.helper_connections as helper_connections
 from flask import Blueprint, redirect, render_template, session
 
 staff_blueprint = Blueprint(

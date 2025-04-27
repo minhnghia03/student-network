@@ -1,13 +1,14 @@
 """
 Handles the view for quizzes and related functionality.
 """
+
 import sqlite3
 
-import student_network.helpers.helper_achievements as helper_achievements
-import student_network.helpers.helper_connections as helper_connections
-import student_network.helpers.helper_general as helper_general
-import student_network.helpers.helper_login as helper_login
-import student_network.helpers.helper_quizzes as helper_quizzes
+import helpers.helper_achievements as helper_achievements
+import helpers.helper_connections as helper_connections
+import helpers.helper_general as helper_general
+import helpers.helper_login as helper_login
+import helpers.helper_quizzes as helper_quizzes
 from flask import Blueprint, redirect, render_template, request, session
 
 quizzes_blueprint = Blueprint(
