@@ -1,136 +1,59 @@
 {% extends "base.html" %}
-<meta property="og:title" content="{{ name }} on Reconnect" />
+<meta property="og:title" content="{{ name }} trên HSA Connect" />
 <meta property="og:image" content="{{ profile_picture }}" />
 <meta property="og:description" content="{{ bio | truncate(150) }}" />
-{% block title %}Profile{% endblock %} {% block content %}
+{% block title %}Trang cá nhân{% endblock %}
+{% block content %}
 
 <style>
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.15);
+    --card-radius: 15px;
+    --item-radius: 10px;
+    --tag-radius: 20px;
+    --button-radius: 8px;
+  }
+
+  /* Medal colors */
   .gold {
-    background: conic-gradient(
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800
-    );
+    background: linear-gradient(135deg, #edc800, #ffe800);
   }
 
   .silver {
-    background: conic-gradient(
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6
-    );
+    background: linear-gradient(135deg, #c3c3c3, #e6e6e6);
   }
 
   .bronze {
-    background: conic-gradient(
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645
-    );
+    background: linear-gradient(135deg, #b14439, #d95641);
   }
 
   .platinum {
-    background: conic-gradient(
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4
-    );
+    background: linear-gradient(135deg, #b6b5b2, #f6ebf4);
   }
 
   .diamond {
-    background: conic-gradient(
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db
-    );
+    background: linear-gradient(135deg, #2980b9, #d6eaf8);
   }
 
   .black {
-    background: conic-gradient(
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555
-    );
+    background: linear-gradient(135deg, #000000, #7a7a7a);
   }
 
+  /* Glow effects */
   .bronze-glow {
     text-shadow: 0 0 5px #b2453a;
     color: #b2453a !important;
@@ -161,446 +84,1017 @@
     color: #1a1a1a !important;
   }
 
+  /* Achievement animations */
   .achievement-icon {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-
     background-clip: text;
     text-fill-color: transparent;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .achievement:hover .achievement-icon {
-    animation-duration: 300ms;
-    animation-name: achievement-hover;
-    animation-timing-function: ease-in-out;
+    transform: scale(1.2);
   }
 
-  @keyframes achievement-hover {
-    0% {
-      transform: scaleX(1) scaleY(1);
-    }
-
-    20% {
-      transform: scaleX(0.8) scaleY(1.1);
-    }
-
-    50% {
-      transform: scaleX(1.2) scaleY(0.9);
-    }
-
-    100% {
-      transform: scaleX(1) scaleY(1);
-    }
+  /* Main layout */
+  .page-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
   }
 
-  .scrolling {
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 25px;
+    position: relative;
+  }
+
+  /* Cover photo and profile picture */
+  .cover-container {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 200px;
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+    background: var(--light-gradient);
+    overflow: hidden;
+  }
+
+  .cover-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-picture-container {
+    position: absolute;
+    bottom: -60px;
+    left: 30px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 5px solid white;
+    background: white;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  .profile-picture {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+
+  .profile-picture:hover {
+    transform: scale(1.05);
+  }
+
+  /* Profile header section */
+  .profile-header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    background: white;
+    margin-top: -20px;
+    padding: 80px 30px 20px;
+    border-radius: 0 0 var(--card-radius) var(--card-radius);
+    box-shadow: var(--card-shadow);
+  }
+
+  .profile-title {
+    flex: 1;
+  }
+
+  .profile-name {
+    font-size: 2.2rem;
+    color: var(--text-dark);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .profile-username {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 10px;
+    border-radius: var(--tag-radius);
+    font-weight: 500;
+  }
+
+  .profile-subtitle {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    color: var(--text-medium);
+  }
+
+  .profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+
+  /* Sidebar card styling */
+  .profile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+  }
+
+  .info-card-header {
+    padding: 15px 20px;
+    background: var(--light-gradient);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .info-card-content {
+    padding: 20px;
+  }
+
+  /* Stats and Progress */
+  .level-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+
+  .level-number {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .level-progress {
+    height: 8px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .level-bar {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 4px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .stat-item {
+    background: var(--primary-light);
+    padding: 15px 10px;
+    border-radius: var(--item-radius);
+    transition: transform 0.2s ease;
+  }
+
+  .stat-item:hover {
+    transform: translateY(-3px);
+    background: var(--primary-hover);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  /* Tags styling */
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .profile-tag {
+    padding: 5px 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--tag-radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    transition: all 0.2s ease;
+  }
+
+  .profile-tag:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+  }
+
+  .profile-tag.interest {
+    background: var(--secondary-light);
+    color: var(--secondary);
+  }
+
+  .profile-tag.interest:hover {
+    background: var(--secondary-hover);
+  }
+
+  /* Achievements grid */
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 15px;
+    justify-items: center;
+  }
+
+  .achievement {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .achievement:hover {
+    transform: translateY(-5px);
+  }
+
+  /* Content area styling */
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .content-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .content-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .content-tab {
+    padding: 15px 25px;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .content-tab:hover {
+    color: var(--primary);
+  }
+
+  .content-tab.active {
+    color: var(--primary);
+  }
+
+  .content-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient);
+    border-radius: 3px 3px 0 0;
+  }
+
+  .tab-content {
+    padding: 25px;
+    max-height: 600px;
     overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    max-height: 800px;
+  }
+
+  /* Biography section */
+  .bio-card {
+    margin-bottom: 20px;
+  }
+
+  .profile-bio {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-medium);
+  }
+
+  /* Posts styling */
+  .post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .post-card {
+    background: white;
+    border-radius: var(--item-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .post-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .post-content {
+    padding: 15px;
+  }
+
+  .post-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+
+  .post-title a {
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .post-title a:hover {
+    color: var(--primary);
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .post-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .post-likes,
+  .post-comments {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .post-date {
+    font-size: 0.8rem;
+  }
+
+  /* Empty states */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+  }
+
+  .empty-text {
+    font-size: 1.1rem;
+  }
+
+  /* Social media buttons */
+  .socials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--button-radius);
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .social-button:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+  }
+
+  .facebook-btn {
+    background: #3b5998;
+  }
+
+  .twitter-btn {
+    background: #1da1f2;
+  }
+
+  .instagram-btn {
+    background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+  }
+
+  .linkedin-btn {
+    background: #0077b5;
+  }
+
+  .youtube-btn {
+    background: #ff0000;
+  }
+
+  /* Buttons styling */
+  .profile-button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--button-radius);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .profile-button.primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .profile-button.primary:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .profile-button.secondary {
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  .profile-button.secondary:hover {
+    background: var(--primary-light);
+  }
+
+  .profile-button.danger {
+    background: white;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+
+  .profile-button.danger:hover {
+    background: rgba(255, 94, 135, 0.05);
+  }
+
+  /* Responsive design */
+  @media screen and (max-width: 1024px) {
+    .profile-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .profile-actions {
+      margin-top: 10px;
+    }
+
+    .post-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .cover-container {
+      height: 150px;
+    }
+
+    .profile-picture-container {
+      width: 100px;
+      height: 100px;
+      bottom: -50px;
+      left: 20px;
+    }
+
+    .profile-header {
+      padding-top: 60px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .profile-name {
+      font-size: 1.8rem;
+    }
+
+    .content-tabs {
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .content-tab {
+      padding: 15px 15px;
+    }
+
+    .post-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
-<div class="ui segment">
-  <div class="ui grid container stackable">
-    <div class="row">
-      <div class="five wide column" id="left-column">
-        <img
-          style="margin-bottom: 1em; border-radius: 1em"
-          class="ui image fluid rounded"
-          src="{{ profile_picture }}"
-          alt=""
-        />
+<div class="page-container">
+  <div class="profile-grid">
+    <!-- Cover and profile picture -->
+    <div class="cover-container">
+      <div class="cover-gradient"></div>
+      <div class="profile-picture-container">
+        <img class="profile-picture" src="{{ profile_picture }}" alt="{{ name }}">
+      </div>
+    </div>
 
-        <h1 class="mobile only">
-          <div>{{ name }}</div>
-        </h1>
+    <!-- Profile header -->
+    <div class="profile-header">
+      <div class="profile-title">
+        <h1 class="profile-name">{{ name }}</h1>
 
-        <div class="ui list">
-          <div class="item">
-            <div class="ui label basic">
-              <i class="male icon"></i>
-              {{ gender }}
-            </div>
-          </div>
-          <div class="item">
-            <div class="ui label basic">
-              <i class="birthday cake icon"></i>
-              {{ birthday }} ({{ age }} years old)
-            </div>
-          </div>
-          <div class="item">
-            <div class="ui label blue basic">
-              <i class="envelope open outline icon"></i>
-              <a href="mailto:{{ email }}">{{ email }}</a>
-            </div>
-          </div>
-          <div class="ui progress indicating {{ progress_color }} tiny">
-            <!-- TO DO: fix experience level bar -->
-            <div
-              class="bar"
-              style="width: {{ 100*current_xp/xp_next_level }}%;"
-            >
-              <div class="progress"></div>
-            </div>
-            <div class="label">
-              Level {{ level }} ({{ current_xp }}/{{ xp_next_level }})
-            </div>
-          </div>
-          <div class="ui divider hidden"></div>
+        {% if account_type == "staff" %}
+        <div class="profile-username" style="background: rgba(255, 94, 135, 0.1); color: #ff5e87;">
+          @{{ username }} <span style="margin-left: 5px;">&#8226; {{ account_type }}</span>
         </div>
-        <div class="ui divider horizontal">Hobbies</div>
-        <div style="text-align: center">
-          {% for hobby in hobbies %}
-          <a class="ui label teal" style="text-transform: capitalize"
-            >{{ hobby[0] }}</a
-          >
-          {% endfor %} {% if hobbies|length == 0 %}
-          <p>No Hobbies</p>
-          {% endif %}
+        {% elif account_type == "admin" %}
+        <div class="profile-username" style="background: rgba(167, 119, 227, 0.1); color: #a777e3;">
+          @{{ username }} <span style="margin-left: 5px;">&#8226; {{ account_type }}</span>
         </div>
-        <div class="ui divider horizontal">Interests</div>
-        <div style="text-align: center">
-          {% for interest in interests %}
-          <a class="ui label purple" style="text-transform: capitalize"
-            >{{ interest[0] }}</a
-          >
-          {% endfor %} {% if interests|length == 0 %}
-          <p>No Interests</p>
-          {% endif %}
-        </div>
-
-        <div class="ui horizontal divider">Top Achievements</div>
-
-        <div class="ui icons" style="text-align: center">
-          {% for achievement in unlocked_achievements %}
-          <div
-            class="achievement"
-            style="display: inline-block"
-            data-html='<div class="header">{{ achievement[4] }}</div><div style="color: grey; text-transform: uppercase; font-size: 0.8em;"
-                        class="{{ achievement[2] }}-glow">{{ achievement[2] }}</div>{{ achievement[0] }}<br><b>{{ achievement[3] }} XP</b>'
-          >
-            <i
-              class="icon {{ achievement[1] }} big {{ achievement[2] }} achievement-icon"
-              data-title="{{ achievement[4] }}"
-              data-content="{{ achievement[0] }} | {{ achievement[3] }} XP"
-            ></i>
-          </div>
-          {% endfor %} {% if unlocked_achievements|length == 0 %}
-          <p>No Unlocked Achievements</p>
-          {% endif %}
-        </div>
-
-        <div class="ui horizontal divider">Top Flashcard Sets</div>
-        {% for card_set in flashcards %}
-        <div class="ui segment">
-          <h3>
-            <a href="/flashcards/edit/{{ card_set[0] }}">{{ card_set[3] }}</a>
-            <div class="ui label mini" style="float: right">
-              {{ card_set[4] }} {% if card_set[4]==1 %} play {% else %} plays {%
-              endif %}
-              <div class="detail">
-                {{ card_set[5] }} {% if card_set[5]==1 %} card {% else %} cards
-                {% endif %}
-              </div>
-            </div>
-          </h3>
-        </div>
-        {% endfor %}
-
-        <div class="ui horizontal divider">Top Quizzes</div>
-        {% for quiz in quizzes %}
-        <div class="ui segment">
-          <h3>
-            <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
-            <div class="ui label mini" style="float: right">
-              {{ quiz[4] }} {% if quiz[4]==1 %} play {% else %} plays {% endif
-              %}
-              <div class="detail">
-                {{ quiz[5] }} {% if quiz[5]==1 %} question {% else %} questions
-                {% endif %}
-              </div>
-            </div>
-          </h3>
-        </div>
-        {% endfor %}
-
-        <div class="ui horizontal divider">Socials</div>
-        <div style="text-align: center">
-          {% if socials|length == 0 %}
-          <p>No Socials</p>
-          {% endif %}
-        </div>
-        {% if socials|length > 0 %}
-        <div class="ui grid two column container stackable">
-          {% if 'facebook' in socials %}
-          <div class="column">
-            <a
-              href="https://www.facebook.com/{{ socials['facebook'] }}"
-              target="_blank"
-            >
-              <button class="ui button facebook icon fluid mini">
-                <i class="facebook icon"></i>
-                Facebook
-              </button>
-            </a>
-          </div>
-          {% endif %} {% if 'linkedin' in socials %}
-          <div class="column">
-            <a
-              href="https://www.linkedin.com/in/{{ socials['linkedin'] }}"
-              target="_blank"
-            >
-              <button class="ui button linkedin icon fluid mini">
-                <i class="linkedin icon"></i>
-                LinkedIn
-              </button>
-            </a>
-          </div>
-          {% endif %} {% if 'twitter' in socials %}
-          <div class="column">
-            <a
-              href="https://www.twitter.com/{{ socials['twitter'] }}"
-              target="_blank"
-            >
-              <button class="ui button twitter icon fluid mini">
-                <i class="linkedin icon"></i>
-                Twitter
-              </button>
-            </a>
-          </div>
-          {% endif %} {% if 'instagram' in socials %}
-          <div class="column">
-            <a
-              href="https://www.instagram.com/{{ socials['instagram'] }}"
-              target="_blank"
-            >
-              <button class="ui button instagram icon fluid mini">
-                <i class="instagram icon"></i>
-                Instagram
-              </button>
-            </a>
-          </div>
-          {% endif %} {% if 'youtube' in socials %}
-          <div class="column">
-            <a
-              href="https://www.youtube.com/c/{{ socials['youtube'] }}"
-              target="_blank"
-            >
-              <button class="ui button youtube icon fluid mini">
-                <i class="youtube icon"></i>
-                YouTube
-              </button>
-            </a>
-          </div>
-          {% endif %}
+        {% else %}
+        <div class="profile-username" style="background: rgba(110, 142, 251, 0.1); color: #6e8efb;">
+          @{{ username }} <span style="margin-left: 5px;">&#8226; {{ account_type }}</span>
         </div>
         {% endif %}
+
+        <div class="profile-subtitle">Đang học: {{ degree }}</div>
       </div>
-      <div class="eleven wide column">
-        <div class="ui grid">
-          <div class="sixteen wide column">
-            <h1>
-              <div class="mobile hidden">{{ name }}</div>
-            </h1>
+
+      <div class="profile-actions">
+        {% if session and session["username"] == username %}
+        <a href="../edit-profile" class="profile-button primary">
+          <i class="icon pencil"></i> Chỉnh sửa hồ sơ
+        </a>
+        {% else %}
+        <button class="profile-button danger">
+          <i class="exclamation triangle icon"></i> Báo cáo
+        </button>
+
+        {% if username != session["username"] and session["username"] %}
+        {% if type == None %}
+        <button class="profile-button primary" form="connect-request">
+          <i class="user icon"></i> Kết nối
+        </button>
+        <form action="{{ url_for('connections.connect_request', username=username) }}" method="POST"
+          id="connect-request"></form>
+        {% endif %}
+
+        {% if type == "request" %}
+        <button class="profile-button secondary" form="pending-remove-connection">
+          <i class="bell slash icon"></i> Đang chờ
+        </button>
+        <form action="{{ url_for('connections.remove_connection', username=username) }}" method="GET"
+          id="pending-remove-connection"></form>
+        {% endif %}
+
+        {% if type == "incoming" %}
+        <button class="profile-button primary" form="accept">
+          <i class="user icon"></i> Chấp nhận yêu cầu
+        </button>
+        <form action="{{ url_for('connections.accept_connection_request', username=username) }}" method="GET"
+          id="accept"></form>
+        {% endif %}
+
+        {% if type == "connected" %}
+        <button class="profile-button primary" form="close-connection">
+          <i class="handshake outline icon"></i> Đánh dấu là bạn thân
+        </button>
+        <form action="{{ url_for('connections.close_connection', username=username) }}" method="GET"
+          id="close-connection"></form>
+        {% endif %}
+
+        {% if type == "close_friend" %}
+        <button class="profile-button primary" form="remove-close">
+          <i class="handshake outline icon"></i> Bạn thân
+        </button>
+        <form action="{{ url_for('connections.remove_close_friend', username=username) }}" method="GET"
+          id="remove-close"></form>
+        {% endif %}
+
+        {% if type == "connected" or type == "close_friend" %}
+        <button class="profile-button secondary" form="connected-remove-connection">
+          <i class="user icon"></i> Đã kết nối
+        </button>
+        <form action="{{ url_for('connections.remove_connection', username=username) }}" method="GET"
+          id="connected-remove-connection"></form>
+        {% endif %}
+
+        {% if type == "block" %}
+        <button class="profile-button danger" form="unblock-button">
+          <i class="bell slash icon"></i> Đã chặn
+        </button>
+        <form action="{{ url_for('connections.unblock_user', username=username) }}" method="GET" id="unblock-button">
+        </form>
+        {% else %}
+        <button class="profile-button danger" form="block-button">
+          <i class="bell slash icon"></i> Chặn
+        </button>
+        <form action="{{ url_for('connections.block_user', username=username) }}" method="GET" id="block-button"></form>
+        {% endif %}
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar with user info -->
+    <div class="profile-sidebar">
+      <!-- About card -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="info circle icon"></i> Thông tin cá nhân
+        </div>
+        <div class="info-card-content">
+          <div class="ui list">
+            <div class="item" style="margin-bottom: 10px;">
+              <i class="male icon" style="color: #6e8efb;"></i>
+              <div class="content">{{ gender }}</div>
+            </div>
+            <div class="item" style="margin-bottom: 10px;">
+              <i class="birthday cake icon" style="color: #6e8efb;"></i>
+              <div class="content">{{ birthday }} ({{ age }} tuổi)</div>
+            </div>
+            <div class="item">
+              <i class="envelope open outline icon" style="color: #6e8efb;"></i>
+              <div class="content">
+                <a href="mailto:{{ email }}" style="color: #6e8efb;">{{ email }}</a>
+              </div>
+            </div>
           </div>
-          <div class="eight wide column">
-            {% if account_type == "staff" %}
-            <div class="ui label basic medium red">
-              @{{ username }}
-              <div class="detail">{{ account_type }}</div>
+
+          <!-- Bio section -->
+          {% if bio %}
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+            <div style="font-weight: 500; margin-bottom: 8px; color: #333;">Tiểu sử</div>
+            <p style="margin: 0; color: #555; line-height: 1.5;">{{ bio }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Level and XP card -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="chart line icon"></i> Cấp độ & Kinh nghiệm
+        </div>
+        <div class="info-card-content">
+          <div class="level-info">
+            <span class="level-number">Level {{ level }}</span>
+            <span>{{ current_xp }}/{{ xp_next_level }} XP</span>
+          </div>
+          <div class="level-progress">
+            <div class="level-bar" style="width: {{ 100*current_xp/xp_next_level }}%;"></div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{{ total_posts }}</div>
+              <div class="stat-label">Bài viết</div>
             </div>
-            {% elif account_type == "admin" %}
-            <div class="ui label basic medium purple">
-              @{{ username }}
-              <div class="detail">{{ account_type }}</div>
+            <div class="stat-item">
+              <div class="stat-value">{{ flashcards|length }}</div>
+              <div class="stat-label">Bộ thẻ</div>
             </div>
-            {% else %}
-            <div class="ui label basic medium blue">
-              @{{ username }}
-              <div class="detail">{{ account_type }}</div>
+            <div class="stat-item">
+              <div class="stat-value">{{ quizzes|length }}</div>
+              <div class="stat-label">Bài kiểm tra</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hobbies & Interests card -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="heart icon"></i> Sở thích & Mối quan tâm
+        </div>
+        <div class="info-card-content">
+          <div style="margin-bottom: 15px;">
+            <div style="font-weight: 500; margin-bottom: 10px; color: #333;">Sở thích</div>
+            <div class="tag-container">
+              {% for hobby in hobbies %}
+              <span class="profile-tag">{{ hobby[0] }}</span>
+              {% endfor %}
+              {% if hobbies|length == 0 %}
+              <div style="color: #888; font-size: 0.9rem;">Chưa có sở thích nào</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+            <div style="font-weight: 500; margin-bottom: 10px; color: #333;">Mối quan tâm</div>
+            <div class="tag-container">
+              {% for interest in interests %}
+              <span class="profile-tag interest">{{ interest[0] }}</span>
+              {% endfor %}
+              {% if interests|length == 0 %}
+              <div style="color: #888; font-size: 0.9rem;">Chưa có mối quan tâm nào</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements card -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="trophy icon"></i> Thành tựu
+        </div>
+        <div class="info-card-content">
+          <div class="achievements-grid">
+            {% for achievement in unlocked_achievements %}
+            <div class="achievement" data-html='<div style="text-align:center;">
+                              <div style="font-weight:600; font-size:1.1rem; margin-bottom:5px;">{{ achievement[4] }}</div>
+                              <div style="text-transform:uppercase; font-size:0.8rem; margin-bottom:8px;" 
+                                   class="{{ achievement[2] }}-glow">{{ achievement[2] }}</div>
+                              <div style="color:#555; margin-bottom:5px;">{{ achievement[0] }}</div>
+                              <div style="font-weight:600;">{{ achievement[3] }} XP</div>
+                              </div>'>
+              <i class="icon {{ achievement[1] }} big {{ achievement[2] }} achievement-icon"></i>
+            </div>
+            {% endfor %}
+
+            {% if unlocked_achievements|length == 0 %}
+            <div class="empty-state" style="grid-column: 1/-1; padding: 10px;">
+              <i class="icon trophy empty-icon" style="font-size: 2rem;"></i>
+              <div style="font-size: 0.9rem;">Chưa có thành tựu nào</div>
             </div>
             {% endif %}
           </div>
-          <div class="eight wide column">
-            <div style="float: right">
-              {% if session and session["username"] == username %}
-              <div class="right floated content">
-                <a href="../edit-profile">
-                  <button class="ui button icon green">
-                    <i class="icon pencil"></i>
-                    Edit Profile &nbsp;
-                  </button>
-                </a>
-              </div>
-              {% else %}
-              <a href="">
-                <button class="ui button icon red">
-                  <i class="exclamation triangle icon"></i>
-                  Report User
-                </button>
-              </a>
-              {% endif %}
-            </div>
-          </div>
         </div>
-        <div class="ui list">
-          <div class="item"><b>Studying: {{ degree }} </b></div>
-        </div>
-        <p style="overflow-wrap: anywhere">{{ bio }}</p>
-        {% if username != session["username"] and session["username"] %}
-        <div class="ui grid">
-          <div class="right floated column">
-            <div class="ui buttons right floated">
-              {% if type == None %}
-              <button class="ui blue button tiny" form="connect-request">
-                <i class="user icon"></i>
-                Connect
-              </button>
-              <form
-                action="{{ url_for('connections.connect_request', username=username) }}"
-                method="POST"
-                id="connect-request"
-              ></form>
-              {% endif %} {% if type == "request" %}
-              <button
-                class="ui grey button tiny"
-                form="pending-remove-connection"
-              >
-                <i class="bell slash icon"></i>
-                Pending
-              </button>
-              <form
-                action="{{ url_for('connections.remove_connection', username=username) }}"
-                method="GET"
-                id="pending-remove-connection"
-              ></form>
-              {% endif %} {% if type == "incoming" %}
-              <button class="ui green button tiny" form="accept">
-                <i class="user icon"></i>
-                Accept Request
-              </button>
-              <form
-                action="{{ url_for('connections.accept_connection_request', username=username) }}"
-                method="GET"
-                id="accept"
-              ></form>
-              {% endif %} {% if type == "connected" %}
-              <button class="ui blue button tiny" form="close-connection">
-                <i class="handshake outline icon"></i>
-                Mark as Close Friend
-              </button>
-              <form
-                action="{{ url_for('connections.close_connection', username=username) }}"
-                method="GET"
-                id="close-connection"
-              ></form>
-              {% endif %} {% if type == "close_friend" %}
-              <button class="ui purple button tiny" form="remove-close">
-                <i class="handshake outline icon"></i>
-                Close Friends
-              </button>
-              <form
-                action="{{ url_for('connections.remove_close_friend', username=username) }}"
-                method="GET"
-                id="remove-close"
-              ></form>
-              {% endif %} {% if type == "connected" or type == "close_friend" %}
-              <button
-                class="ui green button tiny"
-                form="connected-remove-connection"
-              >
-                <i class="user icon"></i>
-                Connected
-              </button>
-              <form
-                action="{{ url_for('connections.remove_connection', username=username) }}"
-                method="GET"
-                id="connected-remove-connection"
-              ></form>
-              {% endif %} {% if type == "block" %}
-              <button class="ui red button tiny" form="unblock-button">
-                <i class="bell slash icon"></i>
-                Blocked
-              </button>
-              <form
-                action="{{ url_for('connections.unblock_user', username=username) }}"
-                method="GET"
-                id="unblock-button"
-              ></form>
-              {% else %}
-              <button class="ui red button tiny" form="block-button">
-                <i class="bell slash icon"></i>
-                Block
-              </button>
-              <form
-                action="{{ url_for('connections.block_user', username=username) }}"
-                method="GET"
-                id="block-button"
-              ></form>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        {% endif %}
+      </div>
 
-        <div
-          class="scrolling"
-          id="posts-container"
-          style="padding: 1em; margin-top: 2em"
-        >
-          <div class="ui horizontal divider">Posts ({{total_posts}})</div>
-          {% for post in posts.UserPosts %}
-          <div class="ui grid stackable">
-            <div class="sixteen wide column">
-              <h2>
-                {% if post.type == "Text" %}
-                <i class="icon file outline alternate"></i>
-                {% endif %} {% if post.type == "Image" %}
-                <i class="icon image"></i>
-                {% endif %} {% if post.type == "Link" %}
-                <i class="icon linkify"></i>
-                {% endif %}
-                <a href="/post_page/{{ post.postId }}">{{ post.title }}</a>
-                <div style="float: right">{{ post.date_posted }}</div>
-              </h2>
-              <div class="ui divider horizontal hidden"></div>
-              {{ post.comments }} {% if post.comments==1 %} comment {% else %}
-              comments {% endif %} &nbsp;&nbsp; {{ post.likes }} {% if
-              post.liked %} <i class="heart icon red"></i> {% else %}
-              <i class="heart icon"></i> {% endif %}
-              <div style="float: right" class="text-muted">
-                <div class="ui label icon basic">
-                  {{ post.privacy }}
-                  <div class="detail">
-                    <i class="icon {{ post.icon }}"></i>
+      <!-- Social links card -->
+      {% if socials|length > 0 %}
+      <div class="info-card">
+        <div class="info-card-header">
+          <i class="share alternate icon"></i> Mạng xã hội
+        </div>
+        <div class="info-card-content">
+          <div class="socials-grid">
+            {% if 'facebook' in socials %}
+            <a href="https://www.facebook.com/{{ socials['facebook'] }}" target="_blank"
+              class="social-button facebook-btn">
+              <i class="facebook icon"></i>
+              Facebook
+            </a>
+            {% endif %}
+
+            {% if 'linkedin' in socials %}
+            <a href="https://www.linkedin.com/in/{{ socials['linkedin'] }}" target="_blank"
+              class="social-button linkedin-btn">
+              <i class="linkedin icon"></i>
+              LinkedIn
+            </a>
+            {% endif %}
+
+            {% if 'twitter' in socials %}
+            <a href="https://www.twitter.com/{{ socials['twitter'] }}" target="_blank"
+              class="social-button twitter-btn">
+              <i class="twitter icon"></i>
+              Twitter
+            </a>
+            {% endif %}
+
+            {% if 'instagram' in socials %}
+            <a href="https://www.instagram.com/{{ socials['instagram'] }}" target="_blank"
+              class="social-button instagram-btn">
+              <i class="instagram icon"></i>
+              Instagram
+            </a>
+            {% endif %}
+
+            {% if 'youtube' in socials %}
+            <a href="https://www.youtube.com/c/{{ socials['youtube'] }}" target="_blank"
+              class="social-button youtube-btn">
+              <i class="youtube icon"></i>
+              YouTube
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Main content area -->
+    <div class="profile-content">
+      <div class="content-card">
+        <div class="content-tabs">
+          <div class="content-tab active" data-tab="posts">
+            <i class="file alternate outline icon"></i> Bài viết ({{ total_posts }})
+          </div>
+          <div class="content-tab" data-tab="flashcards">
+            <i class="clone outline icon"></i> Thẻ ghi nhớ ({{ flashcards|length }})
+          </div>
+          <div class="content-tab" data-tab="quizzes">
+            <i class="tasks icon"></i> Bài kiểm tra ({{ quizzes|length }})
+          </div>
+        </div>
+
+        <!-- Posts tab -->
+        <div class="tab-content" id="posts-tab">
+          <div class="post-grid">
+            {% for post in posts.UserPosts %}
+            <div class="post-card">
+              {% if post.type == "Image" %}
+              <img src="{{ post.image_url }}" alt="{{ post.title }}" class="post-image">
+              {% endif %}
+
+              <div class="post-content">
+                <h3 class="post-title">
+                  {% if post.type == "Text" %}
+                  <i class="icon file outline alternate"></i>
+                  {% endif %}
+                  {% if post.type == "Link" %}
+                  <i class="icon linkify"></i>
+                  {% endif %}
+                  <a href="/post_page/{{ post.postId }}">{{ post.title }}</a>
+                </h3>
+
+                <div class="post-meta">
+                  <div class="post-stats">
+                    <div class="post-comments">
+                      <i class="comment outline icon"></i> {{ post.comments }}
+                    </div>
+                    <div class="post-likes">
+                      {% if post.liked %}
+                      <i class="heart icon red"></i>
+                      {% else %}
+                      <i class="heart outline icon"></i>
+                      {% endif %}
+                      {{ post.likes }}
+                    </div>
+                  </div>
+                  <div class="post-date">
+                    <i class="icon {{ post.icon }}"></i> {{ post.date_posted }}
                   </div>
                 </div>
               </div>
             </div>
+            {% endfor %}
+
+            {% if posts.UserPosts|length == 0 %}
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <i class="icon file outline alternate empty-icon"></i>
+              <div class="empty-text">Chưa có bài viết nào</div>
+            </div>
+            {% endif %}
           </div>
-          <div class="ui divider"></div>
-          {% endfor %}
+        </div>
+
+        <!-- Flashcards tab -->
+        <div class="tab-content" id="flashcards-tab" style="display: none;">
+          <div class="post-grid">
+            {% for card_set in flashcards %}
+            <div class="post-card">
+              <div class="post-content">
+                <h3 class="post-title">
+                  <i class="icon clone outline"></i>
+                  <a href="/flashcards/edit/{{ card_set[0] }}">{{ card_set[3] }}</a>
+                </h3>
+
+                <div class="post-meta">
+                  <div class="post-stats">
+                    <div class="post-comments">
+                      <i class="eye icon"></i> {{ card_set[4] }}
+                    </div>
+                    <div class="post-likes">
+                      <i class="clone outline icon"></i> {{ card_set[5] }}
+                    </div>
+                  </div>
+                  <div class="post-date">
+                    <i class="calendar alternate outline icon"></i> {{ card_set[2] }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% if flashcards|length == 0 %}
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <i class="icon clone outline empty-icon"></i>
+              <div class="empty-text">Chưa có bộ thẻ ghi nhớ nào</div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quizzes tab -->
+        <div class="tab-content" id="quizzes-tab" style="display: none;">
+          <div class="post-grid">
+            {% for quiz in quizzes %}
+            <div class="post-card">
+              <div class="post-content">
+                <h3 class="post-title">
+                  <i class="icon tasks"></i>
+                  <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
+                </h3>
+
+                <div class="post-meta">
+                  <div class="post-stats">
+                    <div class="post-comments">
+                      <i class="eye icon"></i> {{ quiz[4] }}
+                    </div>
+                    <div class="post-likes">
+                      <i class="question circle outline icon"></i> {{ quiz[5] }}
+                    </div>
+                  </div>
+                  <div class="post-date">
+                    <i class="calendar alternate outline icon"></i> {{ quiz[2] }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% if quizzes|length == 0 %}
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <i class="icon tasks empty-icon"></i>
+              <div class="empty-text">Chưa có bài kiểm tra nào</div>
+            </div>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Use static/local versions instead of this cdnjs link -->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
 
 <script>
+  // Initialize tooltips
   $("[data-html]").popup();
 
-  /*document.addEventListener("DOMContentLoaded", function() {
-              var height = document.getElementById("left-column").clientHeight;
-              document.getElementById("posts-container").style.setProperty("max-height", height+"px", "important");
+  // Tab switching
+  $(document).ready(function () {
+    $('.content-tab').click(function () {
+      const tabId = $(this).data('tab');
 
-              console.log(height);
-          })*/
+      // Update active tab
+      $('.content-tab').removeClass('active');
+      $(this).addClass('active');
+
+      // Show the selected tab content
+      $('.tab-content').hide();
+      $(`#${tabId}-tab`).show();
+    });
+
+    // Show first tab by default
+    $('#posts-tab').show();
+  });
 </script>
 
 {% endblock %}

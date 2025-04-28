@@ -1,31 +1,530 @@
-<meta property="og:title" content="Reconnect | Quiz" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Quiz Results{% endblock %} {% block
-content %}
-<!-- when writing the for loop, use the whole ui segment instead of just "sixteen wide column" -->
-<div class="ui segment">
-  {% for question in question_feedback %} {%if question[1] == question[2]%}
-  <div class="ui message green">
-    <div class="header">{{question[0]}}</div>
-    <div class="detail">{{question[2]}}</div>
-    <div class="detail">Correct</div>
-  </div>
-  {%endif%} {%if question[1] != question[2]%}
-  <div class="ui message red">
-    <div class="header">{{question[0]}}</div>
-    <div class="detail">Your answer: {{question[1]}}</div>
-    <div class="detail">Correct Answer: {{question[2]}}</div>
-  </div>
-  {%endif%} {%endfor%}
+<meta property="og:title" content="HSA Connect | Kết quả bài kiểm tra" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
 
-  <h2>Score: {{score}} / {{question_feedback | length}} ({{percentage}}%)</h2>
-  <a href="/quizzes">Back to Quiz Page</a>
+{% extends "base.html" %}
+{% block title %}Kết quả bài kiểm tra{% endblock %}
+{% block content %}
+
+<style>
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
+  }
+
+  /* Results container */
+  .results-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* Summary card */
+  .summary-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 30px;
+    position: relative;
+  }
+
+  .summary-header {
+    padding: 30px;
+    text-align: center;
+    background: var(--light-gradient);
+    position: relative;
+  }
+
+  .confetti {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .results-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .results-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: white;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 2;
+  }
+
+  .score-value {
+    font-size: 3rem;
+    font-weight: 700;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .score-max {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  .score-percentage {
+    font-size: 1.1rem;
+    margin-top: 5px;
+    font-weight: 600;
+  }
+
+  .high-score {
+    color: var(--success);
+  }
+
+  .medium-score {
+    color: var(--warning);
+  }
+
+  .low-score {
+    color: var(--danger);
+  }
+
+  .summary-body {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 0 15px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+  }
+
+  .correct-value {
+    color: var(--success);
+  }
+
+  .incorrect-value {
+    color: var(--danger);
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Questions review */
+  .review-section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title i {
+    color: var(--primary);
+  }
+
+  .question-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .question-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .question-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .question-number {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .question-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .question-body {
+    padding: 20px 25px;
+  }
+
+  .answer {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: var(--input-radius);
+    position: relative;
+  }
+
+  .answer-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .user-answer {
+    background: rgba(255, 94, 135, 0.1);
+    border-left: 4px solid var(--danger);
+  }
+
+  .user-answer .answer-label {
+    color: var(--danger);
+  }
+
+  .correct-answer {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid var(--success);
+  }
+
+  .correct-answer .answer-label {
+    color: var(--success);
+  }
+
+  .correct-user-answer {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid var(--success);
+  }
+
+  .correct-user-answer .answer-label {
+    color: var(--success);
+  }
+
+  .answer-text {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+  }
+
+  .result-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .correct-badge {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success);
+  }
+
+  .incorrect-badge {
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+  }
+
+  /* Actions */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--button-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: var(--text-medium);
+  }
+
+  .btn-secondary:hover {
+    background: #e5e5e5;
+  }
+
+  .share-button {
+    margin-left: auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .summary-body {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .summary-stat {
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-stat:last-child {
+      border-bottom: none;
+    }
+
+    .actions {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="results-container">
+  <!-- Results summary -->
+  <div class="summary-card">
+    <div class="summary-header">
+      {% if percentage >= 70 %}
+      <canvas id="confetti-canvas" class="confetti"></canvas>
+      {% endif %}
+
+      <h1 class="results-title">Kết quả bài kiểm tra</h1>
+      <p class="results-subtitle">{% if percentage >= 70 %}Chúc mừng! Bạn đã hoàn thành tốt bài kiểm tra{% elif
+        percentage >= 50 %}Không tệ! Bạn có thể làm tốt hơn lần sau{% else %}Hãy cố gắng thêm! Bạn có thể cải thiện kết
+        quả{% endif %}</p>
+
+      <div class="score-circle">
+        <div class="score-value">{{score}}</div>
+        <div class="score-max">/ {{question_feedback | length}}</div>
+        <div
+          class="score-percentage {% if percentage >= 70 %}high-score{% elif percentage >= 50 %}medium-score{% else %}low-score{% endif %}">
+          {{percentage}}%
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-body">
+      <div class="summary-stat">
+        <div class="stat-value correct-value">{{ correct_count }}</div>
+        <div class="stat-label">Đúng</div>
+      </div>
+
+      <div class="summary-stat">
+        <div class="stat-value incorrect-value">{{ incorrect_count }}</div>
+        <div class="stat-label">Sai</div>
+      </div>
+
+      <div class="summary-stat">
+        <div class="stat-value">{{ question_feedback | length }}</div>
+        <div class="stat-label">Tổng số câu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions review -->
+  <div class="review-section">
+    <h2 class="section-title">
+      <i class="list icon"></i> Xem lại bài làm
+    </h2>
+
+    {% for question in question_feedback %}
+    <div class="question-card">
+      <div class="question-header">
+        <div class="question-number">Câu hỏi {{ loop.index }}</div>
+        <div class="question-text">{{ question[0] }}</div>
+      </div>
+
+      <div class="question-body">
+        {% if question[1] == question[2] %}
+        <div class="answer correct-user-answer">
+          <span class="answer-label">Câu trả lời của bạn</span>
+          <div class="answer-text">{{ question[1] }}</div>
+          <div class="result-badge correct-badge">Chính xác</div>
+        </div>
+        {% else %}
+        <div class="answer user-answer">
+          <span class="answer-label">Câu trả lời của bạn</span>
+          <div class="answer-text">{{ question[1] }}</div>
+          <div class="result-badge incorrect-badge">Không chính xác</div>
+        </div>
+
+        <div class="answer correct-answer">
+          <span class="answer-label">Đáp án đúng</span>
+          <div class="answer-text">{{ question[2] }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <a href="/quizzes" class="btn btn-secondary">
+      <i class="arrow left icon"></i> Quay lại trang Bài trắc nghiệm
+    </a>
+
+    <a href="/quiz/{{ quiz_id }}" class="btn btn-primary">
+      <i class="redo icon"></i> Làm lại bài kiểm tra
+    </a>
+
+    <a href="#" class="btn btn-primary share-button" onclick="shareResults(); return false;">
+      <i class="share icon"></i> Chia sẻ kết quả
+    </a>
+  </div>
 </div>
-{%endblock%}
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize statistics
+    var correctCount = 0;
+    var incorrectCount = 0;
+
+    {% for question in question_feedback %}
+    {% if question[1] == question[2] %}
+    correctCount++;
+    {% else %}
+    incorrectCount++;
+    {% endif %}
+    {% endfor %}
+
+    // Set the counts
+    document.querySelector('.correct-value').textContent = correctCount;
+    document.querySelector('.incorrect-value').textContent = incorrectCount;
+
+    // Trigger confetti for high scores
+    {% if percentage >= 70 %}
+    const canvas = document.getElementById('confetti-canvas');
+    const confettiOptions = {
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    };
+
+    // Fire confetti
+    const myConfetti = confetti.create(canvas, {
+      resize: true,
+      useWorker: true
+    });
+
+    myConfetti(confettiOptions);
+
+    // Fire again after a delay
+    setTimeout(() => {
+      myConfetti({
+        ...confettiOptions,
+        particleCount: 50,
+        origin: { y: 0.7 }
+      });
+    }, 700);
+    {% endif %}
+  });
+
+  // Share results function
+  function shareResults() {
+    // Sửa phần này để tránh xung đột giữa template literals của JavaScript và các biến Jinja2
+    const score = "{{ score }}";
+    const questionCount = "{{ question_feedback | length }}";
+    const percentage = "{{ percentage }}";
+
+    const text = `Tôi đã hoàn thành bài trắc nghiệm trên HSA Connect với điểm số: ${score}/${questionCount} (${percentage}%). Hãy thử sức bạn nhé!`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Kết quả bài trắc nghiệm HSA Connect',
+        text: text,
+        url: window.location.href,
+      })
+        .catch((error) => console.log('Có lỗi khi chia sẻ:', error));
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      prompt('Sao chép đường dẫn này để chia sẻ kết quả của bạn:', text + '\n' + window.location.href);
+    }
+  }
+</script>
+
+{% endblock %}

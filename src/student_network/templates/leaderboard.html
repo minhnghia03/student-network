@@ -1,56 +1,441 @@
-<meta property="og:title" content="Reconnect | Leaderboard" />
+<meta property="og:title" content="HSA Connect | Bảng xếp hạng" />
 <meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
-<meta property="og:description" content="The Student Network. Connecting students in and outside the classroom." />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
 {% extends "base.html" %}
-{% block title %}Leaderboard{% endblock %}
+{% block title %}Bảng xếp hạng{% endblock %}
 {% block content %}
-{% if errors %} 
-  <div class="ui message red">
-    <div class="header">Error:</div>
-    {% for item in errors %}
-    <p>{{ item }}</p>
-    {% endfor %}
-  </div>
+
+<style>
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
+  }
+
+  /* Main container */
+  .leaderboard-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  /* Header section */
+  .leaderboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .leaderboard-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .leaderboard-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+
+  /* User ranking card */
+  .user-ranking-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 90px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .user-ranking-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--gradient);
+  }
+
+  .ranking-number {
+    font-size: 4rem;
+    font-weight: 700;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+
+  .ranking-label {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    margin-bottom: 10px;
+  }
+
+  .ranking-total {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  .ranking-percent {
+    display: inline-block;
+    background: var(--light-gradient);
+    color: var(--primary);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Podium section */
+  .podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 40px;
+    height: 200px;
+  }
+
+  .podium-place {
+    text-align: center;
+    padding: 0 10px;
+    transition: all 0.3s ease;
+  }
+
+  .podium-place:hover {
+    transform: translateY(-10px);
+  }
+
+  .podium-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+  }
+
+  .first-place .podium-avatar {
+    width: 90px;
+    height: 90px;
+    border: 4px solid #ffd700;
+  }
+
+  .second-place .podium-avatar {
+    width: 80px;
+    height: 80px;
+    border: 4px solid #c0c0c0;
+  }
+
+  .third-place .podium-avatar {
+    width: 70px;
+    height: 70px;
+    border: 4px solid #cd7f32;
+  }
+
+  .podium-username {
+    font-weight: 600;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    display: block;
+    margin: 0 auto 5px;
+    font-size: 0.9rem;
+  }
+
+  .first-place .podium-username {
+    font-size: 1.1rem;
+  }
+
+  .podium-base {
+    height: 70px;
+    background: var(--gradient);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .first-place .podium-base {
+    height: 120px;
+    width: 110px;
+  }
+
+  .second-place .podium-base {
+    height: 90px;
+    width: 100px;
+  }
+
+  .podium-xp {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  /* Leaderboard table */
+  .leaderboard-table-container {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .leaderboard-table th {
+    background: var(--primary-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .leaderboard-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    vertical-align: middle;
+  }
+
+  .leaderboard-table tbody tr {
+    transition: all 0.2s ease;
+  }
+
+  .leaderboard-table tbody tr:hover {
+    background: var(--primary-light);
+  }
+
+  .leaderboard-table tbody tr.active {
+    background: var(--primary-light);
+    font-weight: 500;
+  }
+
+  .rank-cell {
+    font-weight: 700;
+    color: var(--text-dark);
+    width: 70px;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+
+  .top-rank {
+    background: var(--light-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    font-size: 1.3rem;
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .user-info {
+    flex: 1;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+    display: block;
+    text-decoration: none;
+  }
+
+  .user-name:hover {
+    color: var(--primary);
+  }
+
+  .user-title {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .level-cell,
+  .xp-cell {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  /* Error message */
+  .error-message {
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+    padding: 15px 20px;
+    border-radius: var(--input-radius);
+    margin-bottom: 20px;
+  }
+
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .podium-container {
+      height: 180px;
+    }
+
+    .podium-base {
+      width: 70px;
+    }
+
+    .first-place .podium-base {
+      width: 90px;
+    }
+
+    .second-place .podium-base {
+      width: 80px;
+    }
+  }
+
+  @media (max-width: 640px) {
+
+    .leaderboard-table th:nth-child(3),
+    .leaderboard-table td:nth-child(3) {
+      display: none;
+    }
+  }
+</style>
+
+{% if errors %}
+<div class="error-message">
+  <div class="error-title">Lỗi:</div>
+  {% for item in errors %}
+  <p>{{ item }}</p>
+  {% endfor %}
+</div>
 {% endif %}
-  <div class="ui segment">
-    <div style="text-align: center;">
-      <div class="ui statistic">
-        <div class="detail">Your Ranking</div>
-        <div class="value">#{{ myRanking }} <span
-            style="font-size: 0.3em;">/ {{ totalUserCount }}</span>
-        </div>
-        <b>Top {{percent}}%</b>
-      </div>
+
+<div class="leaderboard-container">
+  <div class="leaderboard-header">
+    <h1 class="leaderboard-title">Bảng xếp hạng</h1>
+    <p class="leaderboard-subtitle">Xem ai đang dẫn đầu trong cộng đồng HSA Connect!</p>
+  </div>
+
+  <!-- User's current ranking -->
+  <div class="user-ranking-card">
+    <div class="ranking-number">#{{ myRanking }}</div>
+    <div class="ranking-label">Thứ hạng của bạn</div>
+    <div class="ranking-total">Trong tổng số {{ totalUserCount }} người dùng</div>
+    <div class="ranking-percent">Top {{ percent }}%</div>
+  </div>
+
+  <!-- Podium for top 3 -->
+  {% if leaderboard|length >= 3 %}
+  <div class="podium-container">
+    <!-- Second place -->
+    <div class="podium-place second-place">
+      <a href="/profile/{{ leaderboard[1][0] }}">
+        <img src="{{ leaderboard[1][2] }}" class="podium-avatar" alt="{{ leaderboard[1][0] }}">
+      </a>
+      <a href="/profile/{{ leaderboard[1][0] }}" class="podium-username">{{ leaderboard[1][0] }}</a>
+      <div class="podium-xp">{{ leaderboard[1][1] }} XP</div>
+      <div class="podium-base">2</div>
     </div>
-    <div class="ui horizontal divider hidden"></div>
-    <table class="ui very basic celled table fluid selectable compact stackable">
+
+    <!-- First place -->
+    <div class="podium-place first-place">
+      <a href="/profile/{{ leaderboard[0][0] }}">
+        <img src="{{ leaderboard[0][2] }}" class="podium-avatar" alt="{{ leaderboard[0][0] }}">
+      </a>
+      <a href="/profile/{{ leaderboard[0][0] }}" class="podium-username">{{ leaderboard[0][0] }}</a>
+      <div class="podium-xp">{{ leaderboard[0][1] }} XP</div>
+      <div class="podium-base">1</div>
+    </div>
+
+    <!-- Third place -->
+    <div class="podium-place third-place">
+      <a href="/profile/{{ leaderboard[2][0] }}">
+        <img src="{{ leaderboard[2][2] }}" class="podium-avatar" alt="{{ leaderboard[2][0] }}">
+      </a>
+      <a href="/profile/{{ leaderboard[2][0] }}" class="podium-username">{{ leaderboard[2][0] }}</a>
+      <div class="podium-xp">{{ leaderboard[2][1] }} XP</div>
+      <div class="podium-base">3</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Leaderboard table -->
+  <div class="leaderboard-table-container">
+    <table class="leaderboard-table">
       <thead>
-      <tr>
-        <th class="one wide"><h3>Rank</h3></th>
-        <th class="seven wide"><h3>User</h3></th>
-        <th class="four wide"><h3>Level</h3></th>
-        <th class="four wide"><h3>Total XP</h3></th>
-      </tr>
+        <tr>
+          <th>Hạng</th>
+          <th>Người dùng</th>
+          <th>Cấp độ</th>
+          <th>Tổng XP</th>
+        </tr>
       </thead>
       <tbody>
-      {% for i in range(leaderboard|length) %}
-        <tr {% if myRanking == i + 1 %} class="active" {% endif %}>
-          <td><h2 class="ui center aligned header">#{{ i + 1}}</h2></td>
+        {% for i in range(leaderboard|length) %}
+        <tr {% if myRanking==i + 1 %} class="active" {% endif %}>
+          <td class="rank-cell {% if i < 3 %}top-rank{% endif %}">#{{ i + 1 }}</td>
           <td>
-            <h4 class="ui image header">
-              <img src='{{ leaderboard[i][2] }}' class="ui mini rounded image" alt="">
-              <div class="content">
-                <a href="/profile/{{ leaderboard[i][0] }}">{{ leaderboard[i][0] }}</a>
-                <div class="sub header">{{ leaderboard[i][4] }}
-                </div>
+            <div class="user-cell">
+              <img src="{{ leaderboard[i][2] }}" class="user-avatar" alt="{{ leaderboard[i][0] }}">
+              <div class="user-info">
+                <a href="/profile/{{ leaderboard[i][0] }}" class="user-name">{{ leaderboard[i][0] }}</a>
+                <div class="user-title">{{ leaderboard[i][4] }}</div>
               </div>
-            </h4>
+            </div>
           </td>
-          <td><h2 class="ui aligned header">{{ leaderboard[i][3][0] }}</h2></td>
-          <td><h2 class="ui aligned header">{{ leaderboard[i][1] }}</h2></td>
+          <td class="level-cell">{{ leaderboard[i][3][0] }}</td>
+          <td class="xp-cell">{{ leaderboard[i][1] }}</td>
         </tr>
-      {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>
+</div>
+
 {% endblock %}

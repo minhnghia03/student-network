@@ -1,243 +1,815 @@
-{% extends "base.html" %} {% block title %}Home Page{% endblock %} {% block
-content %}
+{% extends "base.html" %}
+{% block title %}Tin nhắn | HSA Connect{% endblock %}
+{% block content %}
 
 <style>
-  .chat-message-body {
-    max-width: 45%;
-    display: block;
-    font-family: "Open Sans", sans-serif;
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
   }
 
-  .chat-message-body img {
+  /* Chat container */
+  .chat-container {
+    display: flex;
+    height: calc(100vh - 80px);
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  /* Contacts sidebar */
+  .contacts-sidebar {
+    width: 320px;
+    background: white;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+
+  .contacts-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .contacts-search {
+    position: relative;
+    margin-bottom: 15px;
+  }
+
+  .contacts-search input {
     width: 100%;
-    max-height: 25em;
+    padding: 12px 15px 12px 40px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
   }
 
-  .chat-message-body > .username {
-    color: gray;
+  .contacts-search input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-light);
   }
 
-  .chat-message {
-    background-color: #f0f3f4;
-    padding: 1em;
-    border-radius: 1em;
-    word-break: break-all;
+  .contacts-search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
   }
 
-  .chat-message-body.right-floated .chat-message {
-    background-color: #d6eaf8;
+  .contacts-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
   }
 
-  .left-floated {
-    margin-right: auto;
-    margin-left: 1em;
+  .contacts-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-light);
   }
 
-  .right-floated {
-    margin-left: auto;
-    margin-right: 1em;
-    text-align: right;
+  .contacts-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
   }
 
-  .no-resize {
-    resize: none !important;
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-dark);
   }
 
-  #message-container {
-    padding: 1em;
-    height: auto;
-    max-height: 70vh;
-    overflow: auto;
+  .contact-item:hover {
+    background: var(--primary-light);
   }
 
-  #message-container > .row {
-    margin: 0.1em;
-    padding: 0.1em;
+  .contact-item.active {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary);
+  }
+
+  .contact-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+  }
+
+  .contact-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .contact-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+    font-size: 0.95rem;
+  }
+
+  .contact-lastmsg {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .contact-time {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+
+  .contact-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 10px;
+  }
+
+  .status-online {
+    background: var(--success);
+  }
+
+  .status-offline {
+    background: var(--text-light);
+  }
+
+  /* Chat area */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f9fafb;
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .chat-header-info {
+    flex: 1;
+  }
+
+  .chat-header-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+  }
+
+  .chat-header-status {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 3px;
+  }
+
+  .chat-header-actions {
+    display: flex;
+    gap: 15px;
+  }
+
+  .chat-header-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-medium);
+    transition: all 0.2s ease;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .chat-header-btn:hover {
+    background: var(--primary-hover);
+  }
+
+  /* Messages area */
+  .messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message-row {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    color: var(--text-dark);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    word-break: break-word;
+  }
+
+  .message-bubble img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 5px;
+  }
+
+  .message-bubble-received {
+    background: white;
+    border-bottom-left-radius: 5px;
+    align-self: flex-start;
+  }
+
+  .message-bubble-sent {
+    background: var(--light-gradient);
+    color: var(--primary);
+    border-bottom-right-radius: 5px;
+    align-self: flex-end;
+  }
+
+  .message-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .message-sender {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-right: 8px;
+    color: var(--text-medium);
+  }
+
+  .message-time {
+    font-size: 0.75rem;
+    color: var(--text-light);
+  }
+
+  /* Message input area */
+  .message-input-container {
+    padding: 15px 20px;
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .message-input {
+    flex: 1;
+    background: #f5f5f5;
+    border-radius: 24px;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .message-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    outline: none;
+    padding: 0 10px;
+  }
+
+  .input-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .input-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-medium);
+    transition: all 0.2s ease;
+  }
+
+  .input-action:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--primary);
+  }
+
+  .send-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+  }
+
+  /* Empty state */
+  .empty-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    background: #f9fafb;
+  }
+
+  .empty-chat-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 20px;
+    background: var(--primary-light);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-chat-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+  }
+
+  .empty-chat-text {
+    color: var(--text-light);
+    max-width: 300px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--text-medium);
+    margin-top: 10px;
+    margin-bottom: 15px;
+    max-width: fit-content;
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--text-medium);
+    border-radius: 50%;
+    animation: typingAnimation 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typingAnimation {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.5);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .contacts-sidebar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      transform: translateX(-100%);
+    }
+
+    .contacts-sidebar.active {
+      transform: translateX(0);
+    }
+
+    .mobile-toggle {
+      display: block;
+    }
+
+    .message-bubble {
+      max-width: 85%;
+    }
+  }
+
+  /* Custom scrollbar */
+  .contacts-list::-webkit-scrollbar,
+  .messages-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .contacts-list::-webkit-scrollbar-track,
+  .messages-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .contacts-list::-webkit-scrollbar-thumb,
+  .messages-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  .contacts-list::-webkit-scrollbar-thumb:hover,
+  .messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  /* Mobile menu toggle */
+  .mobile-toggle {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-toggle {
+      display: flex;
+    }
   }
 </style>
 
-<div class="ui segment">
-  <div class="ui grid">
-    <div class="four wide column">
-      <div class="ui input fluid small">
-        <label>
-          <input type="text" placeholder="Search" />
-        </label>
-      </div>
-      <div class="ui horizontal divider"></div>
-      <div class="ui grid">
-        <div class="ui vertical menu secondary fluid">
-          {% for user in rooms %}
-          <a
-            href="/chat/{{user[0]}}"
-            class="item {% if user[0] == room %}active{% endif %}"
-          >
-            <img src="{{user[1]}}" class="ui avatar image" alt="" />
-            <span style="font-size: 1.3em">{{user[0]}}</span>
-            <br />
-            <span style="float: right">{{user[2][1]}}</span>
-            <p
-              style="
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              "
-              id="{{user[0]}}-last-msg"
-            >
-              {{user[2][0][0][0]}}
-            </p>
-          </a>
-          {% endfor %}
-        </div>
+<div class="chat-container">
+  <!-- Contacts sidebar -->
+  <div class="contacts-sidebar" id="contactsSidebar">
+    <div class="contacts-header">
+      <h2 class="contacts-title">Tin nhắn</h2>
+      <div class="contacts-subtitle">{{ rooms|length }} cuộc trò chuyện</div>
+
+      <div class="contacts-search">
+        <i class="search icon"></i>
+        <input type="text" placeholder="Tìm kiếm" id="contactSearch">
       </div>
     </div>
-    {% if showChat %}
-    <div
-      class="twelve wide column"
-      style="border-left: 1px solid rgb(240, 240, 240)"
-    >
-      <div class="ui grid">
-        <div class="sixteen wide column">
-          <div class="ui grid compact" id="message-container">
-            {% for message in messages %}
-            <div class="row">
-              {% if message[1] != prev %} {% if message[1] == username %}
-              <div class="chat-message-body right-floated">
-                {% else %}
-                <div class="chat-message-body left-floated">
-                  {% endif %}
-                  <div class="username">{{message[1]}}</div>
-                  {% endif %}
-                  <div class="chat-message">{{message[0]}}</div>
-                </div>
-              </div>
-              {% set prev = message[1] %} {% endfor %}
-            </div>
-          </div>
-          <div class="ui horizontal divider"></div>
-          <div class="sixteen wide column">
-            <div id="typing-text"></div>
 
-            <form
-              class="ui form"
-              method="POST"
-              action=""
-              id="chat-message-form"
-            ></form>
-
-            <div class="ui input icon fluid">
-              <i class="icon arrow up"></i>
-              <label for="message-input"></label
-              ><input
-                name=""
-                rows="1"
-                class="no-resize"
-                id="message-input"
-                form="chat-message-form"
-                required
-              />
-            </div>
-            <div class="ui horizontal list big">
-              <div class="item">
-                <a href="#"><i class="icon paperclip"></i></a>
-              </div>
-              <div class="item">
-                <a href="#"><i class="icon image"></i></a>
-              </div>
-              <div class="item">
-                <a href="#"><i class="icon video"></i></a>
-              </div>
-            </div>
+    <div class="contacts-list">
+      {% for user in rooms %}
+      <a href="/chat/{{user[0]}}" class="contact-item {% if user[0] == room %}active{% endif %}">
+        <img src="{{user[1]}}" class="contact-avatar" alt="{{user[0]}}">
+        <div class="contact-info">
+          <div class="contact-name">{{user[0]}}</div>
+          <div class="contact-lastmsg" id="{{user[0]}}-last-msg">
+            {{user[2][0][0][0]}}
           </div>
         </div>
-      </div>
-      {% else %}
-      <div class="twelve wide column">
-        <div class="ui orange message">
-          Click a user on the left to begin chatting with them.
-        </div>
-      </div>
-      {% endif %}
+        <div class="contact-time">{{user[2][1]}}</div>
+      </a>
+      {% endfor %}
     </div>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+  <!-- Chat area -->
+  {% if showChat %}
+  <div class="chat-area">
+    <div class="chat-header">
+      <div class="mobile-toggle" id="mobileSidebarToggle">
+        <i class="bars icon"></i>
+      </div>
 
-  <script>
-    let socket = io.connect("http://" + document.domain + ":" + location.port);
+      <img src="{{room_avatar}}" alt="{{room}}" class="contact-avatar">
 
-    let private_socket = io(
-      "http://" + document.domain + ":" + location.port + "/private"
-    );
+      <div class="chat-header-info">
+        <div class="chat-header-name">{{room}}</div>
+        <div class="chat-header-status">
+          <span class="status-indicator"></span>
+          <span id="userStatus">Trực tuyến</span>
+        </div>
+      </div>
 
-    const username = "{{username}}";
-    const room = "{{room}}";
+      <div class="chat-header-actions">
+        <div class="chat-header-btn">
+          <i class="phone icon"></i>
+        </div>
+        <div class="chat-header-btn">
+          <i class="video icon"></i>
+        </div>
+        <div class="chat-header-btn">
+          <i class="info circle icon"></i>
+        </div>
+      </div>
+    </div>
 
-    let lastMessageUsername = "";
+    <div class="messages-container" id="message-container">
+      {% set prev = "" %}
+      {% for message in messages %}
+      <div class="message-row">
+        {% if message[1] != prev %}
+        <div class="message-info">
+          <div class="message-sender">{{message[1]}}</div>
+          <div class="message-time">{{message[2] if message[2] else 'Vừa xong'}}</div>
+        </div>
+        {% endif %}
 
-    $("#chat-message-form").on("submit", function (e) {
-      e.preventDefault();
+        <div
+          class="message-bubble {% if message[1] == username %}message-bubble-sent{% else %}message-bubble-received{% endif %}">
+          {{message[0]}}
+        </div>
+      </div>
+      {% set prev = message[1] %}
+      {% endfor %}
 
-      let message = $("#message-input").val();
+      <div class="typing-indicator" id="typing-indicator" style="display: none;">
+        <span>Đang nhập</span>
+        <div class="typing-dots">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
 
-      let packet = {
-        sender_username: username,
-        username: room,
-        message: message,
-      };
+    <div class="message-input-container">
+      <div class="input-actions">
+        <div class="input-action">
+          <i class="smile outline icon"></i>
+        </div>
+      </div>
 
-      $("#message-input").val("");
+      <form class="message-input" id="chat-message-form" method="POST" action="">
+        <div class="input-action">
+          <i class="paperclip icon"></i>
+        </div>
+        <input type="text" placeholder="Nhập tin nhắn..." id="message-input" autocomplete="off">
+        <div class="input-action">
+          <i class="image outline icon"></i>
+        </div>
+      </form>
 
-      private_socket.emit("private_message", packet);
-      NewChatMessage(packet);
-    });
-
-    $(document).ready(function () {
-      private_socket.emit("username", username);
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.keyCode === 13) {
-        e.preventDefault();
-        $("#chat-message-form").submit();
-      }
-    });
-
-    private_socket.on("new_private_message", function (msg) {
-      NewChatMessage(msg);
-    });
-
-    function NewChatMessage(msg) {
-      let extra =
-        msg.sender_username === username ? "right-floated" : "left-floated";
-      let usernameHTML = `<div class="username">${msg.sender_username}</div>`;
-
-      if (lastMessageUsername === msg.sender_username) {
-        usernameHTML = "";
-      }
-
-      lastMessageUsername = msg.sender_username;
-
-      let html = `<div class="row">
-                    <div  class="chat-message-body ${extra}">
-                        ${usernameHTML}
-                        <div class="chat-message">
-                            ${msg.message}
-                        </div>
-                    </div>
-                </div>`;
-
-      document.getElementById("message-container").innerHTML += html;
-
-      document.getElementById(room + "-last-msg").innerText =
-        msg.sender_username + ": " + msg.message;
-
-      $("#message-container").scrollTop(
-        $("#message-container")[0].scrollHeight
-      );
-    }
-  </script>
-
-  {% endblock %}
+      <div class="send-btn" id="send-message-btn">
+        <i class="paper plane icon"></i>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-chat">
+    <div class="empty-chat-icon">
+      <i class="comments outline icon"></i>
+    </div>
+    <h2 class="empty-chat-title">Chưa có cuộc trò chuyện nào được chọn</h2>
+    <p class="empty-chat-text">
+      Chọn một người dùng từ danh sách bên trái để bắt đầu cuộc trò chuyện hoặc tìm kiếm người mới
+    </p>
+    <button class="ui primary button">
+      <i class="search icon"></i> Tìm người dùng mới
+    </button>
+  </div>
+  {% endif %}
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+
+<script>
+  // Socket setup
+  let socket = io.connect("http://" + document.domain + ":" + location.port);
+  let private_socket = io("http://" + document.domain + ":" + location.port + "/private");
+
+  // Variables
+  const username = "{{username}}";
+  const room = "{{room}}";
+  let lastMessageUsername = "";
+  let typingTimeout;
+
+  // Initialize when document is ready
+  $(document).ready(function () {
+    // Connect to private socket
+    private_socket.emit("username", username);
+
+    // Scroll to bottom of messages
+    scrollToBottom();
+
+    // Focus message input
+    $('#message-input').focus();
+
+    // Mobile sidebar toggle
+    $('#mobileSidebarToggle').on('click', function () {
+      $('#contactsSidebar').toggleClass('active');
+    });
+
+    // Contact search
+    $('#contactSearch').on('input', function () {
+      const searchValue = $(this).val().toLowerCase();
+
+      $('.contact-item').each(function () {
+        const contactName = $(this).find('.contact-name').text().toLowerCase();
+        const lastMessage = $(this).find('.contact-lastmsg').text().toLowerCase();
+
+        if (contactName.includes(searchValue) || lastMessage.includes(searchValue)) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    });
+  });
+
+  // Message form submission
+  $("#chat-message-form").on("submit", function (e) {
+    e.preventDefault();
+    sendMessage();
+  });
+
+  // Send message button click
+  $("#send-message-btn").on("click", function () {
+    sendMessage();
+  });
+
+  // Enter key press to send message
+  document.addEventListener("keydown", function (e) {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Input typing detection
+  $("#message-input").on("input", function () {
+    // Emit typing event
+    private_socket.emit("typing", { sender: username, recipient: room });
+
+    // Clear previous timeout
+    clearTimeout(typingTimeout);
+
+    // Set timeout to stop typing
+    typingTimeout = setTimeout(() => {
+      private_socket.emit("stop_typing", { sender: username, recipient: room });
+    }, 3000);
+  });
+
+  // Listen for new messages
+  private_socket.on("new_private_message", function (msg) {
+    NewChatMessage(msg);
+  });
+
+  // Listen for typing events
+  private_socket.on("user_typing", function (data) {
+    if (data.sender === room) {
+      $("#typing-indicator").show();
+    }
+  });
+
+  // Listen for stop typing events
+  private_socket.on("user_stop_typing", function (data) {
+    if (data.sender === room) {
+      $("#typing-indicator").hide();
+    }
+  });
+
+  // Send message function
+  function sendMessage() {
+    let message = $("#message-input").val().trim();
+
+    if (message === "") return;
+
+    let packet = {
+      sender_username: username,
+      username: room,
+      message: message,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    $("#message-input").val("");
+
+    private_socket.emit("private_message", packet);
+    NewChatMessage(packet);
+
+    // Stop typing when sending message
+    private_socket.emit("stop_typing", { sender: username, recipient: room });
+  }
+
+  // Add new chat message
+  function NewChatMessage(msg) {
+    const isSentByMe = msg.sender_username === username;
+    const bubbleClass = isSentByMe ? "message-bubble-sent" : "message-bubble-received";
+    let showInfo = lastMessageUsername !== msg.sender_username;
+    let timestamp = msg.timestamp || 'Vừa xong';
+
+    // Message info HTML
+    let infoHTML = showInfo ?
+      `<div class="message-info">
+        <div class="message-sender">${msg.sender_username}</div>
+        <div class="message-time">${timestamp}</div>
+      </div>` : '';
+
+    // Message HTML
+    let html = `
+      <div class="message-row">
+        ${infoHTML}
+        <div class="message-bubble ${bubbleClass}">
+          ${msg.message}
+        </div>
+      </div>`;
+
+    // Add to container
+    $("#message-container").append(html);
+
+    // Update last message in sidebar
+    $(`#${room}-last-msg`).text(`${msg.sender_username}: ${msg.message}`);
+
+    // Update last message username
+    lastMessageUsername = msg.sender_username;
+
+    // Hide typing indicator when receiving a message
+    $("#typing-indicator").hide();
+
+    // Scroll to bottom
+    scrollToBottom();
+  }
+
+  // Scroll to bottom of messages
+  function scrollToBottom() {
+    const container = document.getElementById('message-container');
+    container.scrollTop = container.scrollHeight;
+  }
+</script>
+
+{% endblock %}

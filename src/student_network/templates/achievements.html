@@ -1,278 +1,456 @@
-<meta property="og:title" content="Reconnect | Achievements" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Achievements{% endblock %} {% block
-content %}
+<meta property="og:title" content="HSA Connect | Thành tựu" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Thành tựu{% endblock %}
+{% block content %}
 
 <style>
-  .overlay {
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+  }
+
+  /* Main container */
+  .achievements-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  /* Header section */
+  .achievements-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .achievements-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .achievements-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+
+  /* Progress section */
+  .progress-container {
+    background: white;
+    padding: 30px;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .progress-ring {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 20px;
+  }
+
+  .progress-percentage {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    vertical-align: middle;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .progress-label {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .progress-details {
     display: flex;
     justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+  }
+
+  .progress-detail {
+    text-align: center;
+  }
+
+  .detail-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .detail-label {
+    font-size: 0.9rem;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Achievement cards */
+  .achievements-section {
+    margin-bottom: 40px;
+  }
+
+  .section-title {
+    display: flex;
     align-items: center;
-
-    background: linear-gradient(
-      rgba(110, 129, 160, 0.1),
-      rgba(110, 129, 160, 0.2)
-    );
-    border: 1px solid #eaeaea;
-    border-radius: 0.5em;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
   }
 
-  .gold {
-    background: conic-gradient(
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800,
-      #edc800,
-      #e3b600,
-      #f3cf00,
-      #ffe800
-    );
+  .section-title i {
+    margin-right: 10px;
+    background: var(--light-gradient);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--primary);
   }
 
-  .silver {
-    background: conic-gradient(
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6,
-      #d7d7d7,
-      #c3c3c3,
-      #cccccc,
-      #c6c6c6
-    );
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
   }
 
-  .bronze {
-    background: conic-gradient(
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645,
-      #d95641,
-      #b14439,
-      #b2453a,
-      #d25645
-    );
+  .achievement-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
 
-  .platinum {
-    background: conic-gradient(
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4,
-      #b6b5b2,
-      #dddcdb,
-      #e9dee7,
-      #f6ebf4
-    );
-  }
-
-  .diamond {
-    background: conic-gradient(
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db,
-      #85c1e9,
-      #d6eaf8,
-      #2980b9,
-      #3498db
-    );
-  }
-
-  .black {
-    background: conic-gradient(
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555,
-      #000000,
-      #7a7a7a,
-      #bebebe,
-      #555555
-    );
-  }
-
-  .bronze-glow {
-    text-shadow: 0 0 5px #b2453a;
-    color: #b2453a !important;
-  }
-
-  .silver-glow {
-    text-shadow: 0 0 5px #c3c3c3;
-    color: #c3c3c3 !important;
-  }
-
-  .gold-glow {
-    text-shadow: 0 0 5px #e3b600;
-    color: #e3b600 !important;
-  }
-
-  .platinum-glow {
-    text-shadow: 0 0 5px #d2b5aa;
-    color: #d2b5aa !important;
-  }
-
-  .diamond-glow {
-    text-shadow: 0 0 5px #85c1e9;
-    color: #85c1e9 !important;
-  }
-
-  .black-glow {
-    text-shadow: 0 0 5px #1a1a1a;
-    color: #1a1a1a !important;
+  .achievement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
   }
 
   .achievement-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-
     background-clip: text;
     text-fill-color: transparent;
   }
 
-  .achievement:hover .achievement-icon {
-    animation-duration: 300ms;
-    animation-name: achievement-hover;
+  .achievement-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+    margin-bottom: 8px;
   }
 
-  @keyframes achievement-hover {
-    0% {
-      transform: scaleX(1) scaleY(1);
-    }
+  .achievement-xp {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 10px;
+  }
 
-    20% {
-      transform: scaleX(0.8) scaleY(1.1);
-    }
+  .achievement-type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+  }
 
-    50% {
-      transform: scaleX(1.2) scaleY(0.9);
-    }
+  /* Locked achievements */
+  .locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    border-radius: var(--card-radius);
+  }
 
+  .lock-icon {
+    font-size: 1.8rem;
+    color: #999;
+    margin-bottom: 10px;
+  }
+
+  /* Animation */
+  .achievement-card:hover .achievement-icon {
+    animation: achievement-bounce 0.5s ease;
+  }
+
+  @keyframes achievement-bounce {
+
+    0%,
     100% {
-      transform: scaleX(1) scaleY(1);
+      transform: scale(1);
+    }
+
+    40% {
+      transform: scale(0.9);
+    }
+
+    70% {
+      transform: scale(1.1);
+    }
+  }
+
+  /* Medal styles */
+  .gold {
+    background: conic-gradient(#edc800, #e3b600, #f3cf00, #ffe800,
+        #edc800, #e3b600, #f3cf00, #ffe800,
+        #edc800, #e3b600, #f3cf00, #ffe800,
+        #edc800, #e3b600, #f3cf00, #ffe800);
+  }
+
+  .silver {
+    background: conic-gradient(#d7d7d7, #c3c3c3, #cccccc, #c6c6c6,
+        #d7d7d7, #c3c3c3, #cccccc, #c6c6c6,
+        #d7d7d7, #c3c3c3, #cccccc, #c6c6c6,
+        #d7d7d7, #c3c3c3, #cccccc, #c6c6c6);
+  }
+
+  .bronze {
+    background: conic-gradient(#d95641, #b14439, #b2453a, #d25645,
+        #d95641, #b14439, #b2453a, #d25645,
+        #d95641, #b14439, #b2453a, #d25645,
+        #d95641, #b14439, #b2453a, #d25645);
+  }
+
+  .platinum {
+    background: conic-gradient(#b6b5b2, #dddcdb, #e9dee7, #f6ebf4,
+        #b6b5b2, #dddcdb, #e9dee7, #f6ebf4,
+        #b6b5b2, #dddcdb, #e9dee7, #f6ebf4,
+        #b6b5b2, #dddcdb, #e9dee7, #f6ebf4);
+  }
+
+  .diamond {
+    background: conic-gradient(#85c1e9, #d6eaf8, #2980b9, #3498db,
+        #85c1e9, #d6eaf8, #2980b9, #3498db,
+        #85c1e9, #d6eaf8, #2980b9, #3498db,
+        #85c1e9, #d6eaf8, #2980b9, #3498db);
+  }
+
+  .black {
+    background: conic-gradient(#000000, #7a7a7a, #bebebe, #555555,
+        #000000, #7a7a7a, #bebebe, #555555,
+        #000000, #7a7a7a, #bebebe, #555555,
+        #000000, #7a7a7a, #bebebe, #555555);
+  }
+
+  /* Type colors */
+  .bronze-type {
+    background-color: rgba(178, 69, 58, 0.1);
+    color: #b2453a;
+  }
+
+  .silver-type {
+    background-color: rgba(195, 195, 195, 0.1);
+    color: #8a8a8a;
+  }
+
+  .gold-type {
+    background-color: rgba(227, 182, 0, 0.1);
+    color: #e3b600;
+  }
+
+  .platinum-type {
+    background-color: rgba(210, 181, 170, 0.1);
+    color: #a39690;
+  }
+
+  .diamond-type {
+    background-color: rgba(133, 193, 233, 0.1);
+    color: #2980b9;
+  }
+
+  .black-type {
+    background-color: rgba(26, 26, 26, 0.1);
+    color: #1a1a1a;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .achievements-grid {
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 15px;
+    }
+
+    .progress-details {
+      gap: 20px;
+    }
+
+    .detail-value {
+      font-size: 1.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .achievements-grid {
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+    }
+
+    .achievement-card {
+      padding: 15px 10px;
+    }
+
+    .progress-ring {
+      width: 150px;
+      height: 150px;
+    }
+
+    .progress-percentage {
+      font-size: 2rem;
     }
   }
 </style>
 
-<div class="ui segment padded">
-  <div class="ui grid stackable">
-    <div class="ui sixteen wide column" style="text-align: center">
-      <div class="ui statistic {{percentage_color}}">
-        <div class="value">{{percentage}}%</div>
-        <div class="label">achievements completed</div>
-      </div>
+<div class="achievements-container">
+  <div class="achievements-header">
+    <h1 class="achievements-title">Thành tựu của bạn</h1>
+    <p class="achievements-subtitle">Hoàn thành nhiều thử thách để mở khóa thành tựu và nhận điểm kinh nghiệm</p>
+  </div>
 
-      <div class="ui horizontal divider">
-        <i class="icon check"></i> Completed ({{unlocked_achievements|length}})
+  <div class="progress-container">
+    <div class="progress-ring">
+      <svg width="180" height="180" viewBox="0 0 180 180">
+        <circle cx="90" cy="90" r="80" fill="none" stroke="#f0f0f0" stroke-width="15" />
+        <circle cx="90" cy="90" r="80" fill="none" stroke="url(#progress-gradient)" stroke-width="15"
+          stroke-dasharray="502.4" stroke-dashoffset="{{ 502.4 - (percentage / 100 * 502.4) }}"
+          transform="rotate(-90 90 90)" />
+        <defs>
+          <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6e8efb" />
+            <stop offset="100%" stop-color="#a777e3" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="progress-percentage">{{percentage}}%</div>
+    </div>
+    <div class="progress-label">của thành tựu đã hoàn thành</div>
+
+    <div class="progress-details">
+      <div class="progress-detail">
+        <div class="detail-value">{{unlocked_achievements|length}}</div>
+        <div class="detail-label">Đã mở khóa</div>
+      </div>
+      <div class="progress-detail">
+        <div class="detail-value">{{locked_achievements|length}}</div>
+        <div class="detail-label">Chưa mở khóa</div>
+      </div>
+      <div class="progress-detail">
+        <div class="detail-value">{{total_xp}}</div>
+        <div class="detail-label">Tổng XP</div>
       </div>
     </div>
+  </div>
 
-    {% for achievement in unlocked_achievements %}
-    <div
-      class="ui one wide column achievement"
-      data-html='<div class="header">{{achievement[4]}}</div><div style="color: grey; text-transform: uppercase; font-size: 0.8em;" class="{{achievement[2]}}-glow">{{achievement[2]}}</div>{{achievement[0]}}<br><b>{{achievement[3]}} XP</b>'
-      style="text-align: center"
-    >
-      <i
-        class="icon {{ achievement[1] }} big {{ achievement[2] }} achievement-icon"
-      ></i>
-    </div>
-    {% endfor %}
+  <!-- Unlocked achievements -->
+  <div class="achievements-section">
+    <h2 class="section-title">
+      <i class="check icon"></i>
+      Thành tựu đã mở khóa
+    </h2>
 
-    <div class="ui sixteen wide column">
-      <div class="ui horizontal divider">
-        <i class="icon lock"></i>Locked ({{locked_achievements|length}})
+    <div class="achievements-grid">
+      {% for achievement in unlocked_achievements %}
+      <div class="achievement-card">
+        <i class="icon {{ achievement[1] }} achievement-icon {{ achievement[2] }}"></i>
+        <div class="achievement-name">{{achievement[4]}}</div>
+        <div class="achievement-xp">{{achievement[3]}} XP</div>
+        <div class="achievement-type {{achievement[2]}}-type">{{achievement[2]}}</div>
+        <div class="achievement-desc" style="display: none;">{{achievement[0]}}</div>
       </div>
+      {% endfor %}
     </div>
+  </div>
 
-    {% for achievement in locked_achievements %}
-    <div
-      class="ui one wide column"
-      data-html='<div class="header">{{achievement[4]}}</div><div style="color: grey; text-transform: uppercase; font-size: 0.8em;" class="{{achievement[2]}}-glow">{{achievement[2]}}</div>{{achievement[0]}}<br><b>{{achievement[3]}} XP</b>'
-      style="text-align: center"
-    >
-      <div class="overlay achievement">
-        <i class="icon lock big"></i>
+  <!-- Locked achievements -->
+  <div class="achievements-section">
+    <h2 class="section-title">
+      <i class="lock icon"></i>
+      Thành tựu chưa mở khóa
+    </h2>
+
+    <div class="achievements-grid">
+      {% for achievement in locked_achievements %}
+      <div class="achievement-card">
+        <i class="icon {{ achievement[1] }} achievement-icon {{ achievement[2] }}"></i>
+        <div class="achievement-name">{{achievement[4]}}</div>
+        <div class="achievement-xp">{{achievement[3]}} XP</div>
+        <div class="achievement-type {{achievement[2]}}-type">{{achievement[2]}}</div>
+        <div class="achievement-desc" style="display: none;">{{achievement[0]}}</div>
+
+        <div class="locked-overlay">
+          <i class="lock icon lock-icon"></i>
+          <div>Chưa mở khóa</div>
+        </div>
       </div>
-      <i
-        class="icon {{ achievement[1] }} big {{achievement[2]}} achievement-icon"
-      ></i>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
 </div>
 
-<!-- Use static/local versions instead of this cdnjs link -->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-
 <script>
-  $("[data-html]").popup();
+  $(document).ready(function () {
+    // Calculate total XP if not provided
+    if (!window.totalXpCalculated) {
+      let totalXp = 0;
+      {% for achievement in unlocked_achievements %}
+      totalXp += parseInt('{{achievement[3]}}');
+      {% endfor %}
+      $('.detail-value:contains("{{total_xp}}")').text(totalXp);
+      window.totalXpCalculated = true;
+    }
+
+    // Initialize tooltips
+    $('.achievement-card').each(function () {
+      const $this = $(this);
+      const name = $this.find('.achievement-name').text();
+      const desc = $this.find('.achievement-desc').text();
+      const type = $this.find('.achievement-type').text();
+      const xp = $this.find('.achievement-xp').text();
+
+      $this.attr('data-tooltip', name + ' - ' + desc + ' (' + xp + ')');
+      $this.attr('data-position', 'top center');
+    });
+
+    $('.achievement-card').popup();
+  });
 </script>
 
-{%endblock%}
+{% endblock %}

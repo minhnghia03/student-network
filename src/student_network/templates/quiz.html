@@ -1,190 +1,487 @@
-<meta property="og:title" content="Reconnect | Quiz" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Quiz{% endblock %} {% block content
-%}
+<meta property="og:title" content="HSA Connect | Bài kiểm tra" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Bài kiểm tra{% endblock %}
+{% block content %}
 
 <style>
-  .selected {
-    background-color: dimgray !important;
-    color: #eaeaea !important;
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
+  }
+
+  /* Quiz container */
+  .quiz-container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  /* Quiz header */
+  .quiz-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .quiz-info {
+    flex: 1;
+  }
+
+  .quiz-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+  }
+
+  .quiz-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-light);
+    font-size: 0.95rem;
+  }
+
+  .quiz-author i {
+    color: var(--primary);
+  }
+
+  .quiz-progress {
+    background: var(--light-gradient);
+    padding: 12px 20px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-text {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.95rem;
+  }
+
+  .progress-bar-container {
+    width: 80px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* Quiz body */
+  .quiz-body {
+    padding: 30px;
+  }
+
+  .quiz-question {
+    display: none;
+  }
+
+  .question-header {
+    background: var(--light-gradient);
+    padding: 25px 30px;
+    border-radius: var(--card-radius);
+    margin-bottom: 25px;
+  }
+
+  .question-number {
+    font-size: 0.95rem;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+
+  .question-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .question-options {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .option-item {
+    background: #f8f9fa;
+    border: 2px solid #f0f0f0;
+    border-radius: var(--card-radius);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .option-item:hover {
+    border-color: rgba(110, 142, 251, 0.3);
+    background: #f5f7ff;
+  }
+
+  .option-item.selected {
+    background: var(--light-gradient);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  .option-text {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: var(--text-medium);
+  }
+
+  .option-item.selected .option-text {
+    color: var(--primary);
+  }
+
+  /* Navigation controls */
+  .quiz-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .quiz-button {
+    padding: 12px 24px;
+    border-radius: var(--button-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+  }
+
+  .quiz-button.primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .quiz-button.primary:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .quiz-button.secondary {
+    background: #f0f0f0;
+    color: var(--text-medium);
+  }
+
+  .quiz-button.secondary:hover {
+    background: #e5e5e5;
+  }
+
+  .quiz-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .quiz-button i {
+    font-size: 0.9rem;
+  }
+
+  .center-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .question-indicator {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .indicator-total {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  /* Quiz footer */
+  .quiz-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
   }
 </style>
 
-<div class="ui segment">
-  <div class="ui grid"></div>
-  {%for index in range(questions|length)%}
-  <div class="ui grid quiz-question stackable compact" id="question-{{index}}">
-    <input
-      form="submitForm"
-      type="hidden"
-      class="userAnswer"
-      value=""
-      name="userAnswer{{index}}"
-    />
-    <div class="ui sixteen wide column">
-      <h2>{{quiz_name}}</h2>
-      <div class="ui label">{{quiz_author}}</div>
+<div class="quiz-container">
+  <!-- Quiz header -->
+  <div class="quiz-header">
+    <div class="quiz-info">
+      <h1 class="quiz-title">{{quiz_name}}</h1>
+      <div class="quiz-author">
+        <i class="user circle icon"></i>
+        <span>Tác giả: {{quiz_author}}</span>
+      </div>
     </div>
-    <div class="ui sixteen wide column">
-      <button class="ui fluid button blue">
-        <h1>{{questions[index]}}</h1>
+
+    <div class="quiz-progress">
+      <span class="progress-text" id="progressText">0/{{questions|length}}</span>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz body -->
+  <div class="quiz-body">
+    <!-- Questions -->
+    {% for index in range(questions|length) %}
+    <div class="quiz-question" id="question-{{index}}">
+      <input form="submitForm" type="hidden" class="userAnswer" value="" name="userAnswer{{index}}">
+
+      <div class="question-header">
+        <div class="question-number">Câu hỏi {{index + 1}}</div>
+        <div class="question-text">{{questions[index]}}</div>
+      </div>
+
+      <div class="question-options">
+        <div class="option-item" data-value="{{answers[index][0]}}">
+          <div class="option-text">{{answers[index][0]}}</div>
+        </div>
+
+        <div class="option-item" data-value="{{answers[index][1]}}">
+          <div class="option-text">{{answers[index][1]}}</div>
+        </div>
+
+        <div class="option-item" data-value="{{answers[index][2]}}">
+          <div class="option-text">{{answers[index][2]}}</div>
+        </div>
+
+        <div class="option-item" data-value="{{answers[index][3]}}">
+          <div class="option-text">{{answers[index][3]}}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Navigation controls -->
+    <div class="quiz-controls">
+      <button class="quiz-button secondary" id="prevQuestionBtn" onclick="PreviousQuestion();">
+        <i class="left arrow icon"></i> Câu trước
       </button>
-    </div>
-    <div class="ui eight wide column">
-      <button class="ui fluid button gray selectable">
-        <h1>{{answers[index][0]}}</h1>
-      </button>
-    </div>
-    <div class="ui eight wide column">
-      <button class="ui fluid button gray selectable">
-        <h1>{{answers[index][1]}}</h1>
-      </button>
-    </div>
-    <div class="ui eight wide column">
-      <button class="ui fluid button gray selectable">
-        <h1>{{answers[index][2]}}</h1>
-      </button>
-    </div>
-    <div class="ui eight wide column">
-      <button class="ui fluid button gray selectable">
-        <h1>{{answers[index][3]}}</h1>
+
+      <div class="center-controls">
+        <div class="question-indicator">
+          <span id="currentQuestionNumber">1</span>
+          <span class="indicator-total">/ {{questions|length}}</span>
+        </div>
+      </div>
+
+      <button class="quiz-button secondary" id="nextQuestionBtn" onclick="NextQuestion();">
+        Câu tiếp <i class="right arrow icon"></i>
       </button>
     </div>
   </div>
-  {%endfor%}
-  <div class="ui horizontal divider"></div>
-  <div class="ui grid">
-    <div class="sixteen wide column" style="text-align: center">
-      <div
-        class="ui button"
-        id="prevQuestionBtn"
-        onclick="PreviousQuestion();"
-        style="float: left"
-      >
-        <i class="left arrow icon"></i> Previous
-      </div>
-      <div class="ui statistic">
-        <div class="value" id="questionNumber"></div>
-      </div>
-      <div
-        class="ui button"
-        id="nextQuestionBtn"
-        onclick="NextQuestion();"
-        style="float: right"
-      >
-        Next <i class="right arrow icon"></i>
-      </div>
-    </div>
-    <div class="sixteen wide column">
-      <form id="submitForm" method="POST" action="/quiz/{{quiz_id}}"></form>
-      <button
-        class="ui right floated green button"
-        type="submit"
-        form="submitForm"
-        id="submitBtn"
-      >
-        Submit Answers
-      </button>
 
-      <a href="{{ url_for('quizzes.quizzes') }}">
-        <button class="ui left-floated gray button">Back to Quizzes</button>
-      </a>
-    </div>
+  <!-- Quiz footer -->
+  <div class="quiz-footer">
+    <a href="{{ url_for('quizzes.quizzes') }}">
+      <button class="quiz-button secondary">
+        <i class="arrow left icon"></i> Quay lại
+      </button>
+    </a>
+
+    <form id="submitForm" method="POST" action="/quiz/{{quiz_id}}"></form>
+    <button class="quiz-button primary disabled" type="submit" form="submitForm" id="submitBtn">
+      Nộp bài <i class="check icon"></i>
+    </button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
-  $(".selectable").click(function () {
-    $(this).parent().parent().find(".selectable").removeClass("selected");
-    $(this).addClass("selected");
+  let questionIndex = 0;
+  const questionCount = {{ questions| length}};
+  let answeredQuestions = 0;
 
-    $("#question-" + questionIndex)
-      .find(".userAnswer")
-      .val($(this).find("h1").html());
-
-    UpdateSubmitBtn();
+  // Initialize
+  $(document).ready(function () {
+    DisplayQuestion(0);
+    updateNavigationButtons();
+    loadSavedAnswers();
   });
 
+  // Option selection
+  $(".option-item").click(function () {
+    // Remove selection from other options in same question
+    $(this).parent().find(".option-item").removeClass("selected");
+
+    // Add selection to this option
+    $(this).addClass("selected");
+
+    // Get the question container
+    const questionContainer = $(this).closest(".quiz-question");
+    const questionId = questionContainer.attr("id");
+    const questionNum = parseInt(questionId.split("-")[1]);
+
+    // Store the answer
+    const selectedValue = $(this).data("value");
+    questionContainer.find(".userAnswer").val(selectedValue);
+
+    // Update answered count if this is a new answer
+    if (!window["question_" + questionNum + "_answered"]) {
+      window["question_" + questionNum + "_answered"] = true;
+      answeredQuestions++;
+      updateProgress();
+    }
+
+    // Update submit button
+    UpdateSubmitBtn();
+
+    // Automatically go to next question if not last question
+    if (questionIndex < questionCount - 1) {
+      setTimeout(function () {
+        NextQuestion();
+      }, 500);
+    }
+  });
+
+  // Update submit button state
   function UpdateSubmitBtn() {
-    let allFilled = true;
-    $(".userAnswer").each(function () {
-      if ($(this).val() === "") {
-        allFilled = false;
+    let allFilled = answeredQuestions === questionCount;
+
+    $("#submitBtn").prop("disabled", !allFilled);
+    $("#submitBtn").toggleClass("disabled", !allFilled);
+  }
+
+  // Update progress indicators
+  function updateProgress() {
+    const progressPercentage = (answeredQuestions / questionCount) * 100;
+    $("#progressBar").css("width", progressPercentage + "%");
+    $("#progressText").text(answeredQuestions + "/" + questionCount);
+  }
+
+  // Load any previously saved answers
+  function loadSavedAnswers() {
+    $(".userAnswer").each(function (index) {
+      const savedValue = $(this).val();
+      if (savedValue) {
+        const questionContainer = $(this).closest(".quiz-question");
+        questionContainer.find(`.option-item[data-value="${savedValue}"]`).addClass("selected");
+        window["question_" + index + "_answered"] = true;
+        answeredQuestions++;
       }
     });
 
-    $("#submitBtn").prop("disabled", !allFilled);
-    $("#submitBtn").removeClass("disabled");
-    if (!allFilled) {
-      $("#submitBtn").addClass("disabled");
-    }
+    updateProgress();
+    UpdateSubmitBtn();
   }
 
-  let questionIndex = 0;
-
-  const questionCount = "{{questions|length}}";
-
-  function Clamp(num, min, max) {
-    if (num < min) return min;
-    if (num > max) return max;
-    return num;
-  }
-
+  // Navigate to next question
   function NextQuestion() {
-    questionIndex++;
-    questionIndex = Clamp(questionIndex, 0, questionCount - 1);
-    DisplayQuestion(questionIndex);
-
-    $("#nextQuestionBtn").prop("disabled", false);
-    $("#prevQuestionBtn").prop("disabled", false);
-
-    $("#nextQuestionBtn").removeClass("disabled");
-    $("#prevQuestionBtn").removeClass("disabled");
-
-    if (questionIndex === questionCount - 1) {
-      $("#nextQuestionBtn").prop("disabled", true);
-      $("#nextQuestionBtn").addClass("disabled");
+    if (questionIndex < questionCount - 1) {
+      questionIndex++;
+      DisplayQuestion(questionIndex);
+      updateNavigationButtons();
     }
   }
 
+  // Navigate to previous question
   function PreviousQuestion() {
-    questionIndex--;
-    questionIndex = Clamp(questionIndex, 0, questionCount - 1);
-    DisplayQuestion(questionIndex);
-
-    $("#prevQuestionBtn").prop("disabled", false);
-    $("#nextQuestionBtn").prop("disabled", false);
-
-    $("#nextQuestionBtn").removeClass("disabled");
-    $("#prevQuestionBtn").removeClass("disabled");
-
-    if (questionIndex === 0) {
-      $("#prevQuestionBtn").prop("disabled", true);
-      $("#prevQuestionBtn").addClass("disabled");
+    if (questionIndex > 0) {
+      questionIndex--;
+      DisplayQuestion(questionIndex);
+      updateNavigationButtons();
     }
   }
 
-  function DisplayQuestion(index) {
-    $(".quiz-question").hide();
-    $("#question-" + index).show();
+  // Update navigation button states
+  function updateNavigationButtons() {
+    // Previous button
+    $("#prevQuestionBtn").prop("disabled", questionIndex === 0);
+    $("#prevQuestionBtn").toggleClass("disabled", questionIndex === 0);
 
-    $("#questionNumber").html(
-      `${index + 1}<span style="font-size: 0.4em;">/${questionCount}</span>`
-    );
+    // Next button
+    $("#nextQuestionBtn").prop("disabled", questionIndex === questionCount - 1);
+    $("#nextQuestionBtn").toggleClass("disabled", questionIndex === questionCount - 1);
+
+    // Update current question indicator
+    $("#currentQuestionNumber").text(questionIndex + 1);
   }
 
-  DisplayQuestion(0);
-  PreviousQuestion();
-  UpdateSubmitBtn();
+  // Display specified question
+  function DisplayQuestion(index) {
+    $(".quiz-question").hide().removeClass("fade-in");
+    $("#question-" + index).show().addClass("fade-in");
+  }
 </script>
 
-{%endblock%}
+{% endblock %}

@@ -1,56 +1,104 @@
-<meta property="og:title" content="Reconnect | Login" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
+<meta property="og:title" content="HSA Connect | Đăng nhập" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
 
-{% extends "base.html" %} {% block title %}Login{% endblock %} {% block
-content%}
-<div class="ui segment basic">
-  <form action="/login" method="POST">
-    <div class="ui card centered" style="min-width: 600px">
-      <div class="content">
-        <div class="header">Login</div>
-      </div>
-      <div class="content">
-        {% if 'login' in errors %}
-        <div class="ui message red">
-          <div class="header">Incorrect Credentials</div>
-          <p>Username and/or password is incorrect.</p>
+{% extends "base.html" %} {% block title %}Đăng nhập{% endblock %}
+
+{% block content %}
+<div class="ui container" style="height: 100vh;">
+  <div class="ui two column very relaxed stackable grid" style="margin-top: 5%;">
+    <div class="column">
+      <div class="ui fluid card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; overflow: hidden;">
+        <div class="content"
+          style="background: linear-gradient(135deg, #6e8efb, #a777e3); padding: 2rem; text-align: center;">
+          <img src="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" class="ui centered small image"
+            style="border-radius: 10px; margin-bottom: 1rem;">
+          <h2 class="ui header" style="color: white; font-size: 2rem; margin-top: 0;">Chào mừng đến với HSA Connect</h2>
+          <p style="color: rgba(255,255,255,0.8);">Đăng nhập để tiếp tục hành trình của bạn</p>
         </div>
-        {% endif %}
-        <div class="ui form">
-          <div class="required field">
-            <label>Username</label>
-            <input name="username_input" type="text" placeholder="Username" />
-          </div>
-          <div class="required field">
-            <label>Password</label>
-            <input name="psw_input" type="password" placeholder="Password" />
-          </div>
-          <p>
-            <a href="" style="color: #0077cc">Forgot your password?</a>
+
+        <div class="content" style="padding: 2rem 2.5rem;">
+          <form action="/login" method="POST" class="ui large form">
+            {% if 'login' in errors %}
+            <div class="ui negative message" style="border-radius: 8px; box-shadow: none;">
+              <div class="header">Đăng nhập thất bại</div>
+              <p>Tên người dùng và/hoặc mật khẩu không chính xác.</p>
+            </div>
+            {% endif %}
+
+            <div class="required field">
+              <label style="font-weight: 500; color: #555;">Tên đăng nhập</label>
+              <div class="ui left icon input" style="margin-top: 0.5rem;">
+                <i class="user icon"></i>
+                <input name="username_input" type="text" placeholder="Nhập tên đăng nhập" style="border-radius: 8px;">
+              </div>
+            </div>
+
+            <div class="required field">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-weight: 500; color: #555;">Mật khẩu</label>
+                <a href="" style="color: #a777e3; font-size: 0.9rem;">Quên mật khẩu?</a>
+              </div>
+              <div class="ui left icon input" style="margin-top: 0.5rem;">
+                <i class="lock icon"></i>
+                <input name="psw_input" type="password" placeholder="Nhập mật khẩu" style="border-radius: 8px;">
+              </div>
+            </div>
+
+            <button type="submit" class="ui fluid large submit button" style="background: linear-gradient(135deg, #6e8efb, #a777e3); 
+                           color: white; margin-top: 2rem; height: 3.5rem; 
+                           border-radius: 8px; font-weight: 500; font-size: 1.1rem;
+                           box-shadow: 0 5px 15px rgba(167, 119, 227, 0.4);">
+              Đăng nhập
+            </button>
+
+            <div class="ui horizontal divider" style="margin: 2rem 0 1.5rem; color: #888;">
+              HOẶC
+            </div>
+
+            <a href="http://localhost:8080/local/oauth/login.php?client_id=hsa-connect&response_type=code"
+              class="ui fluid large button" style="background-color: #f5f5f5; 
+                      color: #333; 
+                      border: 1px solid #e0e0e0;
+                      height: 3.5rem; 
+                      border-radius: 8px;
+                      font-weight: 500;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      gap: 8px;">
+              <i class="graduation cap icon" style="color: #FF9800;"></i>
+              <span>Đăng nhập bằng Moodle</span>
+            </a>
+          </form>
+        </div>
+
+        <div class="extra content"
+          style="background-color: #f9f9f9; padding: 1.5rem; text-align: center; border-top: none;">
+          <p style="color: #666; margin: 0;">
+            Chưa có tài khoản?
+            <a href="/register" style="color: #6e8efb; font-weight: 500;">Đăng ký ngay</a>
           </p>
         </div>
       </div>
-      <div class="extra content">
-        <p>
-          Don't have an account?
-          <a href="/register" style="color: #0077cc">Register here</a>.
-        </p>
-      </div>
-      <input type="submit" value="Login" class="ui button submit" />
-      <a
-        type="button"
-        class="ui button"
-        href="http://localhost:8080/local/oauth/login.php?client_id=hsa-connect&response_type=code"
-        >Login with moodle</a
-      >
     </div>
-  </form>
+
+    <div class="column hide-on-mobile" style="display: flex; align-items: center; justify-content: center;">
+      <div style="text-align: center; padding: 2rem;">
+        <img src="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" class="ui large image"
+          style="max-width: 90%; border-radius: 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.15);">
+        <h2 class="ui header" style="margin-top: 2rem; color: #333; font-size: 1.8rem;">HSA Connect</h2>
+        <p style="color: #666; font-size: 1.1rem;">Kết nối sinh viên trong và ngoài lớp học</p>
+      </div>
+    </div>
+  </div>
 </div>
-{%endblock%}
+
+<style>
+  @media only screen and (max-width: 767px) {
+    .hide-on-mobile {
+      display: none !important;
+    }
+  }
+</style>
+{% endblock %}

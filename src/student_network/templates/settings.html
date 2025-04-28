@@ -1,439 +1,783 @@
-<meta property="og:title" content="Reconnect | Settings" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Settings{% endblock %} {% block
-content %}
+<meta property="og:title" content="HSA Connect | Cài đặt" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
 
-<html lang="en">
-  <meta charset="UTF-8" />
+{% extends "base.html" %}
+{% block title %}Cài đặt{% endblock %}
+{% block content %}
 
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!--
-    <link rel="stylesheet" href={{ url_for('static',
-    filename='styles/semantic.css') }}>
-    -->
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" type="text/css" /> -->
+<style>
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+  }
 
-  <head>
-    <title>Student Network - Profile</title>
-    <!-- Standard Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
-    />
+  .settings-container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
 
-    <style type="text/css">
-      input[type="file"] {
-        display: none;
-      }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 25px;
+  }
 
-      .custom-file-upload {
-        background-color: #e0e1e2;
-        padding: 10px;
-      }
+  /* Sidebar styling */
+  .settings-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+  }
 
-      .custom-file-upload:hover {
-        background-color: #cacbcd;
-        cursor: pointer;
-      }
+  .settings-menu {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
 
-      .sticky {
-        position: sticky;
-        top: 5px;
-        z-index: 99;
-      }
+  .settings-menu-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-medium);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
 
-      #hideValuesOnSelect {
-        display: none;
-      }
-    </style>
-  </head>
+  .settings-menu-item:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
 
-  <body>
-    <!-- Page Contents -->
-    <div class="pusher">
-      <div class="ui container">
-        <div class="ui segment basic">
-          <div class="ui grid">
-            <div class="sixteen wide column mobile hidden">
-              <div class="ui fluid menu" id="menu">
-                <a class="item active" onclick='OpenTab("profile", this);'
-                  ><i class="user circle icon"></i>
-                  Profile
-                </a>
-                <a class="item" onclick='OpenTab("socials", this);'
-                  ><i class="users icon"></i>
-                  Socials
-                </a>
-                <a class="item" onclick='OpenTab("notifications", this);'
-                  ><i class="bell outline icon"></i>
-                  Notifications
-                </a>
-                <a class="item" onclick='OpenTab("privacy", this);'
-                  ><i class="unlock alternate icon"></i>
-                  Privacy
-                </a>
-              </div>
-            </div>
-            <div class="sixteen wide stretched column">
-              {% if errors|length > 0 %}
-              <div class="ui red message">
-                {% for error in errors %}
-                <div class="ui list">
-                  <div class="item">{{ error }}</div>
-                </div>
-                {% endfor %}
-              </div>
-              {% endif %}
+  .settings-menu-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-left: 3px solid var(--primary);
+    font-weight: 500;
+  }
 
-              <div class="ui segment" id="profile">
-                <!-- name bio gender birthday profile_picture hobbies interests -->
+  .settings-menu-item i {
+    font-size: 1.2rem;
+  }
 
-                <form
-                  action="/edit-profile"
-                  method="POST"
-                  class="ui form"
-                  enctype="multipart/form-data"
-                >
-                  <div class="field">
-                    <label>Degree</label>
-                    <label>
-                      <select name="degree_input">
-                        {% for item in degrees.degrees %} Degree: {% if
-                        item.degreeId == degree %}
-                        <option value="{{ item.degreeId }}" selected>
-                          {{ item.degree }}
-                        </option>
-                        {% else %}
-                        <option value="{{ item.degreeId }}">
-                          {{ item.degree }}
-                        </option>
-                        {% endif %} {% endfor %}
-                      </select>
-                    </label>
-                  </div>
-                  <div class="field">
-                    <label>Bio</label>
-                    <label>
-                      <textarea name="bio_input" rows="2" maxlength="160">
-{{ bio }}</textarea
-                      >
-                    </label>
-                  </div>
-                  <div class="field">
-                    <label>Gender</label>
-                    <label for=""></label
-                    ><select name="gender_input" id="">
-                      {% if gender == "Male" %}
-                      <option value="Male" selected>Male</option>
-                      {% else %}
-                      <option value="Male">Male</option>
-                      {% endif %} {% if gender == "Female" %}
-                      <option value="Female" selected>Female</option>
-                      {% else %}
-                      <option value="Female">Female</option>
-                      {% endif %} {% if gender == "Other" %}
-                      <option value="Other" selected>Other</option>
-                      {% else %}
-                      <option value="Other">Other</option>
-                      {% endif %}
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Birthday</label>
-                    <label>
-                      <input
-                        autocomplete="bday"
-                        name="dob_input"
-                        type="date"
-                        value="{{ date }}"
-                      />
-                    </label>
-                  </div>
-                  <div class="field">
-                    <label>Profile Picture</label>
-                    <input
-                      name="file"
-                      type="file"
-                      id="profile-picture-upload"
-                      accept="image/*"
-                      oninput='document.getElementById("avatar-file-name").innerHTML = this.files[0].name;'
-                    />
-                    <label
-                      for="profile-picture-upload"
-                      class="custom-file-upload ui label"
-                    >
-                      <i class="upload icon"></i>
-                      Upload
-                      <div class="detail" id="avatar-file-name">
-                        profile_pic.png
-                      </div>
-                    </label>
-                  </div>
-                  <div class="ui divider"></div>
-                  <div class="field" name="field">
-                    <label>Hobbies</label>
-                    <div style="color: grey">
-                      Use comma to separate the hobbies
-                    </div>
-                    <label>
-                      <input
-                        name="hobbies_input"
-                        type="text"
-                        placeholder="{% if hobbies != none %} {% for item in hobbies %} {{ item[0] }}, {% endfor %} {% endif %}"
-                        maxlength="24"
-                      />
-                    </label>
-                    <script src="../static/hobbies.js"></script>
-                    <div class="ui divider hidden"></div>
-                    <div class="ui grid container" name="hobby-div">
-                      {% if hobbies != none %} {% for i in range(hobbies|length)
-                      %}
-                      <script>
-                        addHTag("{{ hobbies[i][0]}}");
-                      </script>
-                      {% endfor %} {% endif %}
-                    </div>
-                  </div>
-                  <div class="ui divider"></div>
-                  <div class="field">
-                    <label>Interests</label>
-                    <div style="color: grey">
-                      Use comma to separate the interests
-                    </div>
-                    <label>
-                      <input
-                        name="interests_input"
-                        type="text"
-                        maxlength="24"
-                        placeholder="{% if insterest != none %} {% for item in interests %} {{ item[0] }}, {% endfor %} {% endif %}"
-                      />
-                    </label>
-                    <script src="../static/interests.js"></script>
-                    <div class="ui divider hidden"></div>
-                    <div class="ui grid container" name="interest-div">
-                      {% if interests != none %} {% for i in
-                      range(interests|length) %}
-                      <script>
-                        addITag("{{ interests[i][0] }}");
-                      </script>
-                      {% endfor %} {% endif %}
-                    </div>
-                  </div>
-                  <button class="ui button submit">Save Changes</button>
-                </form>
-              </div>
+  /* Content area */
+  .settings-content {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
 
-              <div class="ui segment" id="socials">
-                <form
-                  action="/edit_socials"
-                  method="POST"
-                  class="ui form"
-                  name="socials_edit"
-                  enctype="multipart/form-data"
-                >
-                  <div class="two fields">
-                    <div class="field">
-                      <label><i class="icon facebook"></i> Facebook</label>
-                      <label for="facebook"></label
-                      ><input
-                        type="text"
-                        name="facebook"
-                        id="facebook"
-                        placeholder="Username (e.g. joebloggs10)"
-                        value="{{ socials.get('facebook','') }}"
-                      />
-                    </div>
-                    <div class="field">
-                      <label><i class="icon twitter"></i> Twitter</label>
-                      <label for="twitter"></label
-                      ><input
-                        type="text"
-                        name="twitter"
-                        id="twitter"
-                        placeholder="Username (e.g. joebloggs10)"
-                        value="{{ socials.get('twitter','') }}"
-                      />
-                    </div>
-                  </div>
-                  <div class="two fields">
-                    <div class="field">
-                      <label><i class="icon youtube"></i> YouTube</label>
-                      <label for="youtube"></label
-                      ><input
-                        type="text"
-                        name="youtube"
-                        id="youtube"
-                        placeholder="Username (e.g. joebloggs10)"
-                        value="{{ socials.get('youtube','') }}"
-                      />
-                    </div>
-                    <div class="field">
-                      <label><i class="icon linkedin"></i> LinkedIn</label>
-                      <label for="linkedin"></label
-                      ><input
-                        type="text"
-                        name="linkedin"
-                        id="linkedin"
-                        placeholder="Username (e.g. joebloggs10)"
-                        value="{{ socials.get('linkedin', '') }}"
-                      />
-                    </div>
-                  </div>
-                  <div class="two fields">
-                    <div class="field">
-                      <label><i class="icon instagram"></i> Instagram</label>
-                      <label for="instagram"></label
-                      ><input
-                        type="text"
-                        name="instagram"
-                        id="instagram"
-                        placeholder="Username (e.g. joebloggs10)"
-                        value="{{ socials.get('instagram','') }}"
-                      />
-                    </div>
-                  </div>
-                  <input type="submit" class="ui button submit" value="Save" />
-                </form>
-              </div>
-              <div class="ui segment" id="notifications">Notif</div>
+  .settings-tab {
+    display: none;
+    padding: 25px;
+  }
 
-              <div class="ui segment" id="privacy">
-                <form
-                  action="/profile_privacy"
-                  method="POST"
-                  class="ui form"
-                  enctype="multipart/form-data"
-                >
-                  <div class="field">
-                    <label>Select your profile page privacy settings:</label>
-                    <label>
-                      <select
-                        name="privacy"
-                        onchange="DisplayPrivacyTooltip(this)"
-                      >
-                        {% if privacy == "public" %}
-                        <option value="public" selected>Public</option>
-                        {% else %}
-                        <option value="public">Public</option>
-                        {% endif %} {% if privacy == "protected" %}
-                        <option value="protected" selected>Protected</option>
-                        {% else %}
-                        <option value="protected">Protected</option>
-                        {% endif %} {% if privacy == "close_friends" %}
-                        <option value="close_friends" selected>
-                          Close friends only
-                        </option>
-                        {% else %}
-                        <option value="close_friends">
-                          Close friends only
-                        </option>
-                        {% endif %} {% if privacy == "private" %}
-                        <option value="private" selected>Private</option>
-                        {% else %}
-                        <option value="private">Private</option>
-                        {% endif %}
-                      </select>
-                    </label>
-                  </div>
-                  <button class="ui button submit">Save Changes</button>
-                </form>
-              </div>
-              <div
-                class="ui segment"
-                id="privacy_description"
-                style="display: none"
-              >
-                <div id="public" style="display: none">
-                  Everyone can view all of your profile page details.
-                </div>
-                <div id="protected" style="display: none">
-                  Only your connections can view your profile page.
-                </div>
-                <div id="close_friends" style="display: none">
-                  Only your close friends can view your profile page.
-                </div>
-                <div id="private" style="display: none">
-                  You are the only one who can view your profile page.
-                </div>
-              </div>
-            </div>
-          </div>
+  .settings-tab.active {
+    display: block;
+  }
+
+  .settings-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .settings-title {
+    font-size: 1.4rem;
+    color: var(--text-dark);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .settings-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  /* Form styling */
+  .settings-form .field {
+    margin-bottom: 20px;
+  }
+
+  .settings-form label {
+    display: block;
+    font-weight: 500;
+    color: var(--text-medium);
+    margin-bottom: 8px;
+  }
+
+  .settings-form input[type="text"],
+  .settings-form input[type="date"],
+  .settings-form textarea,
+  .settings-form select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    transition: border 0.2s ease;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+  }
+
+  .settings-form input[type="text"]:focus,
+  .settings-form input[type="date"]:focus,
+  .settings-form textarea:focus,
+  .settings-form select:focus {
+    border-color: var(--primary);
+    outline: none;
+  }
+
+  .settings-form textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .settings-form .helper-text {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  .file-upload-container {
+    margin-top: 10px;
+  }
+
+  .custom-file-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--input-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .custom-file-upload:hover {
+    background: var(--primary-hover);
+  }
+
+  .file-name {
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .settings-button {
+    padding: 12px 20px;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: var(--input-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .settings-button:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* Tag styling */
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    padding: 5px 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .tag-remove:hover {
+    opacity: 1;
+  }
+
+  /* Social media styling */
+  .social-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .social-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .facebook-bg { background: #3b5998; }
+  .twitter-bg { background: #1da1f2; }
+  .instagram-bg { background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); }
+  .linkedin-bg { background: #0077b5; }
+  .youtube-bg { background: #ff0000; }
+
+  /* Privacy options styling */
+  .privacy-option {
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .privacy-option:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .privacy-option.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .privacy-option-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .privacy-option-title {
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+
+  .privacy-option-description {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-top: 5px;
+    margin-left: 30px;
+  }
+
+  /* Mobile menu */
+  .mobile-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
+
+  .mobile-menu-item {
+    padding: 15px 0;
+    text-align: center;
+    flex: 1;
+    color: var(--text-light);
+    cursor: pointer;
+  }
+
+  .mobile-menu-item.active {
+    color: var(--primary);
+  }
+
+  .mobile-menu-item i {
+    font-size: 1.3rem;
+  }
+
+  /* Error message */
+  .error-message {
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+    padding: 15px;
+    border-radius: var(--input-radius);
+    margin-bottom: 20px;
+  }
+
+  /* Responsive */
+  @media screen and (max-width: 768px) {
+    .settings-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .settings-sidebar {
+      display: none;
+    }
+    
+    .settings-tab {
+      padding: 20px 15px;
+    }
+    
+    .settings-content {
+      margin-bottom: 70px; /* Space for mobile menu */
+    }
+  }
+</style>
+
+<div class="settings-container">
+  <div class="settings-grid">
+    <!-- Sidebar -->
+    <div class="settings-sidebar">
+      <div class="settings-menu">
+        <div class="settings-menu-item active" data-tab="profile">
+          <i class="user circle icon"></i>
+          <span>Hồ sơ cá nhân</span>
+        </div>
+        <div class="settings-menu-item" data-tab="socials">
+          <i class="users icon"></i>
+          <span>Mạng xã hội</span>
+        </div>
+        <div class="settings-menu-item" data-tab="notifications">
+          <i class="bell outline icon"></i>
+          <span>Thông báo</span>
+        </div>
+        <div class="settings-menu-item" data-tab="privacy">
+          <i class="shield alternate icon"></i>
+          <span>Quyền riêng tư</span>
         </div>
       </div>
     </div>
-    <div
-      class="ui equal width grid mobile only"
-      style="position: fixed; bottom: 1em; left: 0; right: 0"
-    >
-      <div
-        class="column"
-        style="background-color: #fff; text-align: center"
-        onclick='OpenTab("profile", this);'
-      >
-        <a class="item active"><i class="user circle icon"></i></a>
+
+    <!-- Content -->
+    <div class="settings-content">
+      <!-- Error messages -->
+      {% if errors|length > 0 %}
+      <div class="error-message">
+        {% for error in errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
       </div>
-      <div
-        class="column"
-        style="background-color: #fff; text-align: center"
-        onclick='OpenTab("socials", this);'
-      >
-        <a class="item"><i class="users icon"></i></a>
+      {% endif %}
+
+      <!-- Profile tab -->
+      <div class="settings-tab active" id="profile-tab">
+        <div class="settings-header">
+          <h1 class="settings-title">Cài đặt hồ sơ cá nhân</h1>
+          <div class="settings-subtitle">Cập nhật thông tin và hình ảnh của bạn trên HSA Connect</div>
+        </div>
+
+        <form action="/edit-profile" method="POST" class="settings-form" enctype="multipart/form-data">
+          <div class="field">
+            <label>Chương trình học</label>
+            <select name="degree_input">
+              {% for item in degrees.degrees %}
+                {% if item.degreeId == degree %}
+                  <option value="{{ item.degreeId }}" selected>{{ item.degree }}</option>
+                {% else %}
+                  <option value="{{ item.degreeId }}">{{ item.degree }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Tiểu sử</label>
+            <textarea name="bio_input" rows="4" maxlength="160" placeholder="Viết giới thiệu ngắn về bản thân (tối đa 160 ký tự)">{{ bio }}</textarea>
+            <div class="helper-text">Tối đa 160 ký tự</div>
+          </div>
+
+          <div class="field">
+            <label>Giới tính</label>
+            <select name="gender_input">
+              <option value="Male" {% if gender == "Male" %}selected{% endif %}>Nam</option>
+              <option value="Female" {% if gender == "Female" %}selected{% endif %}>Nữ</option>
+              <option value="Other" {% if gender == "Other" %}selected{% endif %}>Khác</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Ngày sinh</label>
+            <input autocomplete="bday" name="dob_input" type="date" value="{{ date }}">
+          </div>
+
+          <div class="field">
+            <label>Ảnh đại diện</label>
+            <div class="file-upload-container">
+              <input name="file" type="file" id="profile-picture-upload" accept="image/*" style="display: none;"
+                    oninput='document.getElementById("avatar-file-name").textContent = this.files[0].name;'>
+              <label for="profile-picture-upload" class="custom-file-upload">
+                <i class="upload icon"></i>
+                Tải lên ảnh
+                <span class="file-name" id="avatar-file-name">profile_pic.png</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Sở thích</label>
+            <input name="hobbies_input" type="text" id="hobbies-input" 
+                   placeholder="Nhập sở thích và nhấn Enter" maxlength="24">
+            <div class="helper-text">Sử dụng phím Enter sau mỗi sở thích hoặc phân cách bằng dấu phẩy</div>
+            <div class="tag-container" id="hobbies-container">
+              {% if hobbies != none %}
+                {% for hobby in hobbies %}
+                  <div class="tag hobby-tag">
+                    {{ hobby[0] }}
+                    <span class="tag-remove" onclick="removeTag(this, 'hobby')">×</span>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mối quan tâm</label>
+            <input name="interests_input" type="text" id="interests-input" 
+                   placeholder="Nhập mối quan tâm và nhấn Enter" maxlength="24">
+            <div class="helper-text">Sử dụng phím Enter sau mỗi mối quan tâm hoặc phân cách bằng dấu phẩy</div>
+            <div class="tag-container" id="interests-container">
+              {% if interests != none %}
+                {% for interest in interests %}
+                  <div class="tag interest-tag">
+                    {{ interest[0] }}
+                    <span class="tag-remove" onclick="removeTag(this, 'interest')">×</span>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" class="settings-button">Lưu thay đổi</button>
+        </form>
       </div>
-      <div
-        class="column"
-        style="background-color: #fff; text-align: center"
-        onclick='OpenTab("notifications", this);'
-      >
-        <a class="item"><i class="bell outline icon"></i></a>
+
+      <!-- Socials tab -->
+      <div class="settings-tab" id="socials-tab">
+        <div class="settings-header">
+          <h1 class="settings-title">Kết nối mạng xã hội</h1>
+          <div class="settings-subtitle">Liên kết tài khoản HSA Connect với các mạng xã hội của bạn</div>
+        </div>
+
+        <form action="/edit_socials" method="POST" class="settings-form" name="socials_edit" enctype="multipart/form-data">
+          <div class="field">
+            <div class="social-field">
+              <div class="social-icon facebook-bg">
+                <i class="facebook f icon"></i>
+              </div>
+              <div style="flex: 1;">
+                <label>Facebook</label>
+                <input type="text" name="facebook" placeholder="Tên người dùng (vd: nguyenvana)" 
+                       value="{{ socials.get('facebook','') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="social-field">
+              <div class="social-icon twitter-bg">
+                <i class="twitter icon"></i>
+              </div>
+              <div style="flex: 1;">
+                <label>Twitter</label>
+                <input type="text" name="twitter" placeholder="Tên người dùng (vd: nguyenvana)" 
+                       value="{{ socials.get('twitter','') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="social-field">
+              <div class="social-icon instagram-bg">
+                <i class="instagram icon"></i>
+              </div>
+              <div style="flex: 1;">
+                <label>Instagram</label>
+                <input type="text" name="instagram" placeholder="Tên người dùng (vd: nguyenvana)" 
+                       value="{{ socials.get('instagram','') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="social-field">
+              <div class="social-icon linkedin-bg">
+                <i class="linkedin in icon"></i>
+              </div>
+              <div style="flex: 1;">
+                <label>LinkedIn</label>
+                <input type="text" name="linkedin" placeholder="Tên người dùng (vd: nguyen-van-a)" 
+                       value="{{ socials.get('linkedin', '') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="social-field">
+              <div class="social-icon youtube-bg">
+                <i class="youtube icon"></i>
+              </div>
+              <div style="flex: 1;">
+                <label>YouTube</label>
+                <input type="text" name="youtube" placeholder="Tên kênh (vd: NguyenVanA)" 
+                       value="{{ socials.get('youtube','') }}">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="settings-button">Lưu thay đổi</button>
+        </form>
       </div>
-      <div
-        class="column"
-        style="background-color: #fff; text-align: center"
-        onclick='OpenTab("privacy", this);'
-      >
-        <a class="item"><i class="unlock alternate icon"></i></a>
+
+      <!-- Notifications tab -->
+      <div class="settings-tab" id="notifications-tab">
+        <div class="settings-header">
+          <h1 class="settings-title">Cài đặt thông báo</h1>
+          <div class="settings-subtitle">Tùy chỉnh cách bạn nhận thông báo từ HSA Connect</div>
+        </div>
+        
+        <form action="/notification_settings" method="POST" class="settings-form">
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" name="email_notifications" checked>
+              <span>Nhận thông báo qua email</span>
+            </label>
+            <div class="helper-text">Nhận thông báo quan trọng qua email của bạn</div>
+          </div>
+          
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" name="message_notifications" checked>
+              <span>Thông báo tin nhắn mới</span>
+            </label>
+            <div class="helper-text">Nhận thông báo khi có tin nhắn mới</div>
+          </div>
+          
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" name="post_notifications" checked>
+              <span>Thông báo bài viết</span>
+            </label>
+            <div class="helper-text">Nhận thông báo khi có người bình luận hoặc thích bài viết của bạn</div>
+          </div>
+          
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" name="connection_notifications" checked>
+              <span>Thông báo kết nối</span>
+            </label>
+            <div class="helper-text">Nhận thông báo khi có yêu cầu kết nối mới</div>
+          </div>
+          
+          <button type="submit" class="settings-button">Lưu thay đổi</button>
+        </form>
+      </div>
+
+      <!-- Privacy tab -->
+      <div class="settings-tab" id="privacy-tab">
+        <div class="settings-header">
+          <h1 class="settings-title">Cài đặt quyền riêng tư</h1>
+          <div class="settings-subtitle">Kiểm soát ai có thể xem thông tin của bạn</div>
+        </div>
+
+        <form action="/profile_privacy" method="POST" class="settings-form">
+          <div class="field">
+            <label>Quyền riêng tư cho trang cá nhân:</label>
+            
+            <div class="privacy-option {% if privacy == 'public' %}selected{% endif %}" data-value="public">
+              <div class="privacy-option-header">
+                <input type="radio" name="privacy" value="public" {% if privacy == 'public' %}checked{% endif %}>
+                <div class="privacy-option-title">Công khai</div>
+              </div>
+              <div class="privacy-option-description">
+                Mọi người đều có thể xem tất cả thông tin trên trang cá nhân của bạn.
+              </div>
+            </div>
+            
+            <div class="privacy-option {% if privacy == 'protected' %}selected{% endif %}" data-value="protected">
+              <div class="privacy-option-header">
+                <input type="radio" name="privacy" value="protected" {% if privacy == 'protected' %}checked{% endif %}>
+                <div class="privacy-option-title">Được bảo vệ</div>
+              </div>
+              <div class="privacy-option-description">
+                Chỉ những người đã kết nối với bạn mới có thể xem trang cá nhân của bạn.
+              </div>
+            </div>
+            
+            <div class="privacy-option {% if privacy == 'close_friends' %}selected{% endif %}" data-value="close_friends">
+              <div class="privacy-option-header">
+                <input type="radio" name="privacy" value="close_friends" {% if privacy == 'close_friends' %}checked{% endif %}>
+                <div class="privacy-option-title">Chỉ bạn thân</div>
+              </div>
+              <div class="privacy-option-description">
+                Chỉ những người được bạn đánh dấu là "bạn thân" mới có thể xem trang cá nhân của bạn.
+              </div>
+            </div>
+            
+            <div class="privacy-option {% if privacy == 'private' %}selected{% endif %}" data-value="private">
+              <div class="privacy-option-header">
+                <input type="radio" name="privacy" value="private" {% if privacy == 'private' %}checked{% endif %}>
+                <div class="privacy-option-title">Riêng tư</div>
+              </div>
+              <div class="privacy-option-description">
+                Chỉ bạn mới có thể xem trang cá nhân của mình.
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="settings-button">Lưu thay đổi</button>
+        </form>
       </div>
     </div>
-  </body>
+  </div>
+</div>
 
-  <script>
-    function OpenTab(tabName, curElem) {
-      let tabs = ["profile", "socials", "notifications", "privacy"];
-      let menuItems = document.querySelectorAll("#menu a");
+<!-- Mobile menu -->
+<div class="mobile-menu mobile only">
+  <div class="mobile-menu-item active" data-tab="profile">
+    <i class="user circle icon"></i>
+  </div>
+  <div class="mobile-menu-item" data-tab="socials">
+    <i class="users icon"></i>
+  </div>
+  <div class="mobile-menu-item" data-tab="notifications">
+    <i class="bell outline icon"></i>
+  </div>
+  <div class="mobile-menu-item" data-tab="privacy">
+    <i class="shield alternate icon"></i>
+  </div>
+</div>
 
-      menuItems.forEach(function (elem) {
-        elem.classList.remove("active");
-      });
-      for (let tab of tabs) {
-        document.getElementById(tab).style.display =
-          tab === tabName ? "block" : "none";
-        if (curElem) {
-          curElem.classList.add("active");
-        }
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      OpenTab("profile");
+<script>
+  // Tab switching
+  function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+      tab.classList.remove('active');
     });
-
-    function DisplayPrivacyTooltip(setting) {
-      let tabs = ["public", "protected", "close_friends", "privacy"];
-      for (let tab of tabs) {
-        document.getElementById(tab).style.display =
-          tab === setting.value ? "block" : "none";
-      }
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Update sidebar active item
+    document.querySelectorAll('.settings-menu-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.querySelector(`.settings-menu-item[data-tab="${tabName}"]`).classList.add('active');
+    
+    // Update mobile menu
+    document.querySelectorAll('.mobile-menu-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.querySelector(`.mobile-menu-item[data-tab="${tabName}"]`).classList.add('active');
+  }
+  
+  // Add event listeners for tab switching
+  document.querySelectorAll('.settings-menu-item, .mobile-menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      switchTab(item.dataset.tab);
+    });
+  });
+  
+  // Privacy option selection
+  document.querySelectorAll('.privacy-option').forEach(option => {
+    option.addEventListener('click', () => {
+      // Update selected state
+      document.querySelectorAll('.privacy-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.classList.add('selected');
+      
+      // Select the radio button
+      const radio = option.querySelector('input[type="radio"]');
+      radio.checked = true;
+    });
+  });
+  
+  // Tags handling
+  function addTag(type) {
+    const input = document.getElementById(`${type}s-input`);
+    const container = document.getElementById(`${type}s-container`);
+    const value = input.value.trim();
+    
+    if (!value) return;
+    
+    // Create tag element
+    const tag = document.createElement('div');
+    tag.className = `tag ${type}-tag`;
+    tag.innerHTML = `${value} <span class="tag-remove" onclick="removeTag(this, '${type}')">×</span>`;
+    
+    // Add to container
+    container.appendChild(tag);
+    
+    // Clear input
+    input.value = '';
+  }
+  
+  function removeTag(element, type) {
+    const tag = element.parentNode;
+    tag.remove();
+    updateHiddenInput(type);
+  }
+  
+  function updateHiddenInput(type) {
+    const tags = document.querySelectorAll(`.${type}-tag`);
+    const values = Array.from(tags).map(tag => tag.textContent.trim().replace('×', ''));
+    document.querySelector(`input[name="${type}s_input"]`).value = values.join(',');
+  }
+  
+  // Handle tag input
+  document.getElementById('hobbies-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag('hobby');
+      updateHiddenInput('hobby');
     }
-  </script>
+  });
+  
+  document.getElementById('interests-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag('interest');
+      updateHiddenInput('interest');
+    }
+  });
+  
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial tab
+    switchTab('profile');
+    
+    // Initialize tag inputs
+    updateHiddenInput('hobby');
+    updateHiddenInput('interest');
+  });
+</script>
 
-  {% endblock %}
-</html>
+{% endblock %}

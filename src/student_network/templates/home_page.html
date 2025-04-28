@@ -1,61 +1,127 @@
-<meta property="og:title" content="Reconnect | Home" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Home Page{% endblock %} {% block
-content %}
-<div class="ui segment">
-  <div style="text-align: center">
-    <div class="ui statistic">
-      <h1>Welcome to Reconnect!</h1>
-      <div class="detail">
-        <h4>
-          Reconnect is a student network application for the University of
-          Exeter.
-        </h4>
+<meta property="og:title" content="HSA Connect | Trang chủ" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Trang chủ{% endblock %}
+{% block content %}
+
+<div class="ui two column stackable grid" style="margin-top: 2%;">
+  <!-- Column 1: Welcome and Introduction -->
+  <div class="column">
+    <div class="ui fluid card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; overflow: hidden;">
+      <div class="content"
+        style="background: linear-gradient(135deg, #6e8efb, #a777e3); padding: 2rem; text-align: center;">
+        <img src="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" class="ui centered small image"
+          style="border-radius: 10px; margin-bottom: 1rem;">
+        <h2 class="ui header" style="color: white; font-size: 2rem; margin-top: 0;">Chào mừng đến với HSA Connect!</h2>
+        <p style="color: rgba(255,255,255,0.8);">Nền tảng kết nối sinh viên Học viện An ninh</p>
+      </div>
+
+      <div class="content" style="padding: 2rem 2.5rem;">
+        <p style="font-size: 1.1em; line-height: 1.6; color: #555;">
+          HSA Connect là mạng xã hội dành riêng cho sinh viên Học viện An ninh. Mục tiêu của chúng tôi là tăng cường sự
+          tương tác giữa các sinh viên thông qua trò chơi, bài đăng, và thảo luận. Ứng dụng cũng khuyến khích sinh viên
+          giao tiếp và gắn kết thông qua các chủ đề liên quan đến ngành học, với sự hỗ trợ của các bài kiểm tra do sinh
+          viên và giảng viên tạo ra.
+        </p>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+          <a href="/login">
+            <button class="ui button" style="background: linear-gradient(135deg, #6e8efb, #a777e3); 
+                                            color: white; 
+                                            padding: 1rem 2rem;
+                                            border-radius: 8px; 
+                                            font-weight: 500; 
+                                            font-size: 1.1rem;
+                                            box-shadow: 0 5px 15px rgba(167, 119, 227, 0.4);">
+              Đăng nhập
+            </button>
+          </a>
+          <a href="/register">
+            <button class="ui button" style="background: white; 
+                                            color: #6e8efb; 
+                                            padding: 1rem 2rem;
+                                            border-radius: 8px; 
+                                            font-weight: 500; 
+                                            font-size: 1.1rem;
+                                            border: 2px solid #6e8efb;
+                                            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.2);">
+              Đăng ký
+            </button>
+          </a>
+        </div>
       </div>
     </div>
   </div>
-  <div class="ui cards">
-    <div class="ui horizontal divider hidden"></div>
-    Our aim with Reconnect is to increase student interaction with other
-    students through fun games, posts, and discussions. This application will
-    also encourage students to communicate and bond through degree-related
-    topics, with the help of both student and staff-made quizzes.
-  </div>
 
-  <div class="ui horizontal divider hidden"></div>
+  <!-- Column 2: User Search -->
+  <div class="column">
+    <div class="ui fluid card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; overflow: hidden;">
+      <div class="content"
+        style="background: linear-gradient(135deg, #a777e3, #6e8efb); padding: 2rem; text-align: center;">
+        <i class="users icon" style="color: white; font-size: 3rem;"></i>
+        <h2 class="ui header" style="color: white; font-size: 2rem; margin-top: 0.5rem;">Tìm kiếm người dùng</h2>
+        <p style="color: rgba(255,255,255,0.8);">Kết nối với sinh viên và giảng viên</p>
+      </div>
 
-  <h2>Get Started:</h2>
-  <a href="/login">
-    <button class="ui button icon green">Login</button>
-  </a>
-  or
-  <a href="/register">
-    <button class="ui button icon green">Register Here</button>
-  </a>
-  <br /><br />
-  <div>
-    <h2>Search For a User:</h2>
-    <div class="field">
-      <div class="ui left icon input fluid">
-        <input
-          type="text"
-          placeholder="Search users..."
-          oninput="SearchUser(this.value);"
-        />
-        <i class="users icon"></i>
+      <div class="content" style="padding: 2rem 2.5rem;">
+        <div class="field">
+          <div class="ui left icon input fluid" style="margin-top: 0.5rem;">
+            <i class="search icon"></i>
+            <input type="text" placeholder="Tìm kiếm người dùng..." oninput="SearchUser(this.value);"
+              style="border-radius: 8px; padding: 1rem; height: 3rem;">
+          </div>
+        </div>
+
+        <div class="ui middle aligned divided list" id="users"
+          style="margin-top: 2rem; max-height: 400px; overflow-y: auto;">
+          <!-- Search results will appear here -->
+        </div>
       </div>
     </div>
-
-    <div class="ui vertical list" id="users"></div>
   </div>
 </div>
+
+<!-- Feature highlights -->
+<div class="ui three column stackable grid" style="margin-top: 3%;">
+  <div class="column">
+    <div class="ui fluid card"
+      style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; text-align: center; height: 100%;">
+      <div class="content" style="padding: 2rem;">
+        <i class="graduation cap icon" style="color: #6e8efb; font-size: 3rem;"></i>
+        <h3 class="ui header" style="margin-top: 1rem; color: #333;">Học tập</h3>
+        <p style="color: #666;">Truy cập vào các bài kiểm tra, thẻ ghi nhớ và tài liệu học tập để nâng cao kiến thức của
+          bạn.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="ui fluid card"
+      style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; text-align: center; height: 100%;">
+      <div class="content" style="padding: 2rem;">
+        <i class="users icon" style="color: #6e8efb; font-size: 3rem;"></i>
+        <h3 class="ui header" style="margin-top: 1rem; color: #333;">Kết nối</h3>
+        <p style="color: #666;">Xây dựng mạng lưới của bạn bằng cách kết nối với bạn học, giảng viên và cựu sinh viên.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="ui fluid card"
+      style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 15px; text-align: center; height: 100%;">
+      <div class="content" style="padding: 2rem;">
+        <i class="trophy icon" style="color: #6e8efb; font-size: 3rem;"></i>
+        <h3 class="ui header" style="margin-top: 1rem; color: #333;">Thành tựu</h3>
+        <p style="color: #666;">Đạt được huy hiệu, tăng điểm kinh nghiệm và leo lên bảng xếp hạng khi tham gia các hoạt
+          động.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   function SearchUser(username) {
     let xhttp;
@@ -72,14 +138,22 @@ content %}
 
         document.getElementById("users").innerHTML = "";
 
+        if (json_response.length === 0) {
+          document.getElementById("users").innerHTML =
+            '<div class="item" style="padding: 1rem; text-align: center; color: #888;">' +
+            '<i class="search icon"></i> Không tìm thấy người dùng nào phù hợp' +
+            '</div>';
+          return;
+        }
+
         for (let user of json_response) {
-          let html = `<div class="item">
-                                    <img class="ui avatar image" src="${user[3]}" alt="">
-                                    <div class="content">
-                                        <a class="header" href="./profile/${user[0]}">${user[0]}</a>
-                                        <div class="description">Studying ${user[4]}</div>
-                                    </div>
-                                    </div>`;
+          let html = `<div class="item" style="padding: 0.8rem; border-radius: 8px; transition: all 0.2s ease;">
+                        <img class="ui avatar image" src="${user[3]}" alt="">
+                        <div class="content">
+                          <a class="header" href="./profile/${user[0]}" style="color: #6e8efb;">${user[0]}</a>
+                          <div class="description" style="margin-top: 0.3rem; color: #666;">Đang học ${user[4]}</div>
+                        </div>
+                      </div>`;
 
           document.getElementById("users").innerHTML += html;
         }

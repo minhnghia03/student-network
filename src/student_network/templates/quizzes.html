@@ -1,232 +1,752 @@
-<meta property="og:title" content="Reconnect | Quizzes" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Quiz list{% endblock %} {% block
-content %}
-<!-- when writing the for loop, use the whole ui segment instead of just "sixteen wide column" -->
+<meta property="og:title" content="HSA Connect | Bài trắc nghiệm" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Bài trắc nghiệm{% endblock %}
+{% block content %}
 
 <style>
-  .question {
-    margin: 1em;
-    background-color: rgb(245, 245, 245);
-    padding: 1em;
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
+  }
+
+  /* Main container */
+  .quizzes-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  /* Header section */
+  .quizzes-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .quizzes-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .quizzes-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+
+  /* Tab Navigation */
+  .nav-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 1px;
+  }
+
+  .nav-tab {
+    padding: 12px 20px;
+    font-weight: 600;
+    color: var(--text-medium);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-tab:hover {
+    color: var(--primary);
+  }
+
+  .nav-tab.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+  }
+
+  /* Create Quiz Form */
+  .create-quiz-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .create-quiz-header {
+    background: var(--light-gradient);
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .create-quiz-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .create-quiz-title i {
+    color: var(--primary);
+  }
+
+  .create-quiz-body {
+    padding: 25px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  /* Question Card */
+  .question-card {
+    background: #f8f9fa;
+    border-radius: var(--card-radius);
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .question-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .question-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .question-toggle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .question-toggle:hover {
+    background: var(--primary-hover);
+  }
+
+  .question-input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  .question-label {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .question-label.visible {
+    opacity: 1;
+  }
+
+  .question-input {
+    width: 100%;
+    padding: 12px 15px;
+    padding-left: 75px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .question-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  .question-delete {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .question-delete:hover {
+    background: rgba(255, 94, 135, 0.2);
+  }
+
+  .question-body {
+    padding: 20px;
+    display: none;
+  }
+
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  .answer-item {
+    margin-bottom: 15px;
+  }
+
+  .answer-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .correct-label {
+    color: var(--success);
+  }
+
+  .wrong-label {
+    color: var(--danger);
+  }
+
+  .correct-input {
+    border: 1px solid rgba(40, 167, 69, 0.3);
+  }
+
+  .correct-input:focus {
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  }
+
+  .wrong-input {
+    border: 1px solid rgba(255, 94, 135, 0.3);
+  }
+
+  .wrong-input:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(255, 94, 135, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .answer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Button styles */
+  .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--button-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-success:hover {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background: #e83e5a;
+  }
+
+  /* Form actions */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  /* Error message */
+  .error-message {
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+    padding: 15px 20px;
+    border-radius: var(--input-radius);
+    margin-bottom: 20px;
+  }
+
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  /* Quiz list */
+  .quiz-list {
+    margin-top: 30px;
+  }
+
+  .quiz-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .quiz-card-body {
+    padding: 20px 25px;
+  }
+
+  .quiz-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .quiz-card-title a {
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .quiz-card-title a:hover {
+    color: var(--primary);
+  }
+
+  .quiz-card-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--text-medium);
+  }
+
+  .quiz-author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .quiz-author-link {
+    display: inline-flex;
+    align-items: center;
+    background: var(--light-gradient);
+    padding: 8px 15px;
+    border-radius: 25px;
+    text-decoration: none;
+    color: var(--primary);
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .quiz-author-link:hover {
+    background: var(--primary-hover);
+  }
+
+  .quiz-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .quiz-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .quiz-stat i {
+    color: var(--primary);
+  }
+
+  .quiz-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+  }
+
+  .empty-text {
+    color: var(--text-medium);
+    margin-bottom: 20px;
+    max-width: 500px;
+    margin: 0 auto 20px;
   }
 </style>
 
-<div class="ui segment" id="quiz-post-input">
+<div class="quizzes-container">
+  <div class="quizzes-header">
+    <h1 class="quizzes-title">Bài trắc nghiệm</h1>
+    <p class="quizzes-subtitle">Tạo và tham gia các bài trắc nghiệm để kiểm tra kiến thức của bạn</p>
+  </div>
+
+  <div class="nav-tabs">
+    {% if personal==True %}
+      <a class="nav-tab" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
+      <a class="nav-tab active" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của tôi</a>
+    {% else %}
+      <a class="nav-tab active" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
+      <a class="nav-tab" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của tôi</a>
+    {% endif %}
+  </div>
+
   {% if errors %}
-  <div class="ui message red">
-    <div class="header">Error:</div>
+  <div class="error-message">
+    <div class="error-title">Lỗi:</div>
     {% for item in errors %}
     <p>{{ item }}</p>
     {% endfor %}
   </div>
   {% endif %}
-  <div class="ui horizontal divider hidden"></div>
-  <form
-    action="{{ url_for('quizzes.create_quiz') }}"
-    class="ui form"
-    method="POST"
-  >
-    <div class="field">
-      <label>Quiz Name</label>
-      <input type="text" name="quiz_name" />
+
+  <!-- Create Quiz Form -->
+  <div class="create-quiz-card">
+    <div class="create-quiz-header">
+      <h3 class="create-quiz-title">
+        <i class="plus circle icon"></i> Tạo bài trắc nghiệm mới
+      </h3>
     </div>
+    <div class="create-quiz-body">
+      <form action="{{ url_for('quizzes.create_quiz') }}" method="POST" id="createQuizForm">
+        <div class="form-group">
+          <label class="form-label">Tên bài trắc nghiệm</label>
+          <input type="text" name="quiz_name" class="form-control" placeholder="Nhập tên bài trắc nghiệm">
+        </div>
 
-    <div id="quizQuestions"></div>
+        <div id="quizQuestions"></div>
 
-    <button type="button" onclick="NewQuestion();" class="ui button green">
-      <i class="icon add"></i> New Question
-    </button>
+        <div class="form-actions">
+          <button type="button" onclick="NewQuestion();" class="btn btn-success">
+            <i class="plus icon"></i> Thêm câu hỏi
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="check icon"></i> Tạo bài trắc nghiệm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    <input type="submit" value="Create Quiz" class="ui button teal" />
-  </form>
-</div>
-
-<div class="ui segment">
-  <div class="ui pointing secondary menu">
-    {% if personal==True %}
-    <a class="item" href="{{ url_for('quizzes.quizzes') }}"> All Quizzes </a>
-    <a
-      class="active item"
-      href="{{ url_for('quizzes.quizzes_user', username=username) }}"
-    >
-      Quizzes Created By Me
-    </a>
+  <!-- Quiz List -->
+  <div class="quiz-list">
+    {% if quizzes|length > 0 %}
+      {% for quiz in quizzes %}
+      <div class="quiz-card">
+        <div class="quiz-card-body">
+          <h3 class="quiz-card-title">
+            <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
+          </h3>
+          
+          <div class="quiz-card-info">
+            <div class="quiz-author-info">
+              <span>Tạo bởi:</span>
+              <a href="/profile/{{ quiz[2] }}" class="quiz-author-link">
+                {{ quiz[2] }}
+              </a>
+            </div>
+            
+            <div class="quiz-stats">
+              <div class="quiz-stat">
+                <i class="question circle icon"></i>
+                {{ quiz[5] }} {% if quiz[5]==1 %}câu hỏi{% else %}câu hỏi{% endif %}
+              </div>
+              <div class="quiz-stat">
+                <i class="play circle icon"></i>
+                {{ quiz[4] }} {% if quiz[4]==1 %}lượt chơi{% else %}lượt chơi{% endif %}
+              </div>
+            </div>
+          </div>
+          
+          {% if quiz[2] == username %}
+          <div class="quiz-actions">
+            <a href="{{ url_for('quizzes.quizzes_delete', quiz_id=quiz[0]) }}" class="btn btn-danger">
+              <i class="trash alternate icon"></i> Xóa
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
     {% else %}
-    <a class="active item" href="{{ url_for('quizzes.quizzes') }}">
-      All Quizzes
-    </a>
-    <a
-      class="item"
-      href="{{ url_for('quizzes.quizzes_user', username=username) }}"
-    >
-      Quizzes Created By Me
-    </a>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="file alternate outline icon"></i>
+        </div>
+        <h3 class="empty-title">Chưa có bài trắc nghiệm nào</h3>
+        <p class="empty-text">
+          {% if personal==True %}
+            Bạn chưa tạo bài trắc nghiệm nào. Hãy tạo bài trắc nghiệm đầu tiên của bạn!
+          {% else %}
+            Chưa có bài trắc nghiệm nào được tạo. Hãy trở thành người đầu tiên tạo bài trắc nghiệm!
+          {% endif %}
+        </p>
+        <button onclick="document.querySelector('.create-quiz-card').scrollIntoView({behavior: 'smooth'})" class="btn btn-primary">
+          <i class="plus icon"></i> Tạo bài trắc nghiệm
+        </button>
+      </div>
     {% endif %}
   </div>
 </div>
-
-{% for quiz in quizzes %}
-<div class="ui segment">
-  <div class="ui grid">
-    <div class="ui sixteen wide column">
-      <h2>
-        <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
-        <div style="float: right">
-          <h5>{{ quiz[1] }}</h5>
-        </div>
-      </h2>
-      Created by
-      <a href="/profile/{{ quiz[2] }}">
-        <div class="ui label">
-          {{ quiz[2] }}
-          <div class="detail">
-            {{ quiz[5] }} {% if quiz[5]==1 %} question {% else %} questions {%
-            endif %}
-          </div>
-          <div class="detail">
-            {{ quiz[4] }} {% if quiz[4]==1 %} play {% else %} plays {% endif %}
-          </div>
-        </div>
-      </a>
-      {% if quiz[2] == username %}
-      <div class="ui one wide column" style="float: right">
-        <a href="{{ url_for('quizzes.quizzes_delete', quiz_id=quiz[0]) }}">
-          <button class="ui red button icon">
-            <i class="small trash alternate outline icon"></i>
-          </button>
-        </a>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-{% endfor %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
   function DeleteQuestion(elem) {
-    $(elem).parent().parent().remove();
-
-    UpdateQuestions();
-  }
-
-  function UpdateQuestions() {
-    $(".question").each(function (index) {
-      var i = index + 1;
-
-      $(this)
-        .find(".question-input")
-        .attr("name", "question_" + i);
-      $(this)
-        .find(".correct-answer")
-        .attr("name", "question_" + i + "_ans_1");
-      $(this)
-        .find(".wrong-answer-1")
-        .attr("name", "question_" + i + "_ans_2");
-      $(this)
-        .find(".wrong-answer-2")
-        .attr("name", "question_" + i + "_ans_3");
-      $(this)
-        .find(".wrong-answer-3")
-        .attr("name", "question_" + i + "_ans_4");
+    $(elem).closest('.question-card').slideUp(300, function() {
+      $(this).remove();
+      UpdateQuestions();
     });
   }
 
-  function QuestionLabel(elem) {
-    var question = $(elem).closest(".question");
+  function UpdateQuestions() {
+    $(".question-card").each(function (index) {
+      var i = index + 1;
+      
+      // Update the question number label
+      $(this).find('.question-number').text('Câu hỏi ' + i);
 
-    var allFilled = true;
-
-    $(question)
-      .find(".question-input")
-      .each(function () {
-        if ($(this).val().length === 0) {
-          allFilled = false;
-        }
-      });
-
-    question.find(".question-label").addClass("basic");
-
-    if (allFilled) {
-      question.find(".question-label").removeClass("basic");
-    }
+      // Update form field names
+      $(this).find(".question-input").attr("name", "question_" + i);
+      $(this).find(".correct-answer").attr("name", "question_" + i + "_ans_1");
+      $(this).find(".wrong-answer-1").attr("name", "question_" + i + "_ans_2");
+      $(this).find(".wrong-answer-2").attr("name", "question_" + i + "_ans_3");
+      $(this).find(".wrong-answer-3").attr("name", "question_" + i + "_ans_4");
+    });
   }
 
-  function ToggleDetails(elem) {
-    var targetElem = $(elem).parent().parent().find(".question-details");
-
-    if (targetElem.is(":visible")) {
-      targetElem.slideUp();
-      $(elem).html('<i class="icon triangle down"></i>');
+  function CheckQuestionInputs(card) {
+    var allFilled = true;
+    
+    $(card).find('input[type="text"]').each(function() {
+      if ($(this).val().trim() === '') {
+        allFilled = false;
+      }
+    });
+    
+    if (allFilled) {
+      $(card).find('.question-label').addClass('visible');
     } else {
-      targetElem.slideDown();
-      $(elem).html('<i class="icon triangle up"></i>');
+      $(card).find('.question-label').removeClass('visible');
+    }
+    
+    return allFilled;
+  }
+
+  function ToggleQuestionBody(elem) {
+    var questionBody = $(elem).closest('.question-card').find('.question-body');
+    
+    if (questionBody.is(':visible')) {
+      questionBody.slideUp(300);
+      $(elem).find('i').removeClass('chevron up').addClass('chevron down');
+    } else {
+      questionBody.slideDown(300);
+      $(elem).find('i').removeClass('chevron down').addClass('chevron up');
     }
   }
 
   function NewQuestion() {
+    var questionCount = $('.question-card').length + 1;
+    
     var html = `
-            <div class="question">
-                <div class="ui labeled input fluid">
-                    <button type="button" class="ui button icon toggle-arrow" onclick="ToggleDetails(this);"><i class="icon triangle up"></i></button>
-                    <div class="ui label teal basic question-label">Question</div>
-                    <input class="question-input question-slide-toggle" oninput="QuestionLabel(this);">
-                    <button class="ui button red icon" onclick="DeleteQuestion(this);"><i class="icon times"></i></button>
-                </div>
-                
-                <div class="question-details">
-                    <div class="ui horizontal divider"></div>
-                    <div class="ui grid">        
-                        <div class="eight wide column">
-                            <div class="ui labeled input fluid">
-                                <div class="ui label">Correct Answer</div>
-                                <input class="correct-answer question-input" oninput="QuestionLabel(this);">
-                            </div>
-                        </div>
-                        <div class="eight wide column">
-                            <div class="ui labeled input fluid">
-                                <div class="ui label">Wrong Answer</div>
-                                <input class="wrong-answer-1 question-input" oninput="QuestionLabel(this);">
-                            </div>
-                        </div>
-                        <div class="eight wide column">
-                            <div class="ui labeled input fluid">
-                                <div class="ui label">Wrong Answer</div>
-                                <input class="wrong-answer-2 question-input" oninput="QuestionLabel(this);">
-                            </div>
-                        </div>
-                        <div class="eight wide column">
-                            <div class="ui labeled input fluid">
-                                <div class="ui label">Wrong Answer</div>
-                                <input class="wrong-answer-3 question-input" oninput="QuestionLabel(this);">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+      <div class="question-card">
+        <div class="question-header">
+          <button type="button" class="question-toggle" onclick="ToggleQuestionBody(this);">
+            <i class="chevron down icon"></i>
+          </button>
+          
+          <div class="question-input-wrapper">
+            <div class="question-label">Câu hỏi ${questionCount}</div>
+            <input type="text" class="question-input" placeholder="Nhập câu hỏi" oninput="CheckQuestionInputs(this.closest('.question-card'))">
+          </div>
+          
+          <button type="button" class="question-delete" onclick="DeleteQuestion(this);">
+            <i class="times icon"></i>
+          </button>
+        </div>
+        
+        <div class="question-body">
+          <div class="answer-grid">
+            <div class="answer-item">
+              <label class="answer-label correct-label">Đáp án đúng</label>
+              <input type="text" class="form-control correct-input correct-answer" placeholder="Nhập đáp án đúng" oninput="CheckQuestionInputs(this.closest('.question-card'))">
+            </div>
+            
+            <div class="answer-item">
+              <label class="answer-label wrong-label">Đáp án sai</label>
+              <input type="text" class="form-control wrong-input wrong-answer-1" placeholder="Nhập đáp án sai" oninput="CheckQuestionInputs(this.closest('.question-card'))">
+            </div>
+            
+            <div class="answer-item">
+              <label class="answer-label wrong-label">Đáp án sai</label>
+              <input type="text" class="form-control wrong-input wrong-answer-2" placeholder="Nhập đáp án sai" oninput="CheckQuestionInputs(this.closest('.question-card'))">
+            </div>
+            
+            <div class="answer-item">
+              <label class="answer-label wrong-label">Đáp án sai</label>
+              <input type="text" class="form-control wrong-input wrong-answer-3" placeholder="Nhập đáp án sai" oninput="CheckQuestionInputs(this.closest('.question-card'))">
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
 
     $("#quizQuestions").append(html);
-
-    $(".question-slide-toggle").each(function () {
-      $(this).click(function () {
-        $(this).parent().parent().find(".question-details").slideDown();
-        $(this)
-          .parent()
-          .parent()
-          .find(".toggle-arrow")
-          .html('<i class="icon triangle up"></i>');
-      });
-    });
+    
+    // Auto-expand the newly created question
+    var newQuestion = $(".question-card").last();
+    setTimeout(function() {
+      newQuestion.find('.question-toggle').click();
+      newQuestion.find('.question-input').focus();
+    }, 100);
+    
     UpdateQuestions();
   }
+  
+  // Form validation before submit
+  $("#createQuizForm").on("submit", function(e) {
+    var quizName = $("input[name='quiz_name']").val().trim();
+    var questionCount = $('.question-card').length;
+    
+    if (quizName === '') {
+      e.preventDefault();
+      alert('Vui lòng nhập tên bài trắc nghiệm');
+      return false;
+    }
+    
+    if (questionCount === 0) {
+      e.preventDefault();
+      alert('Vui lòng thêm ít nhất một câu hỏi');
+      return false;
+    }
+    
+    var allQuestionsValid = true;
+    
+    $('.question-card').each(function() {
+      if (!CheckQuestionInputs(this)) {
+        allQuestionsValid = false;
+      }
+    });
+    
+    if (!allQuestionsValid) {
+      e.preventDefault();
+      alert('Vui lòng điền đầy đủ thông tin cho tất cả các câu hỏi');
+      return false;
+    }
+    
+    return true;
+  });
+  
+  // Add at least one question when the page loads
+  $(document).ready(function() {
+    if ($('.question-card').length === 0) {
+      NewQuestion();
+    }
+  });
 </script>
+
 {% endblock %}

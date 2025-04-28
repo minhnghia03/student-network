@@ -1,83 +1,311 @@
-<meta property="og:title" content="Reconnect | Feed" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Feed{% endblock %} {% block content
-%}
+<meta property="og:title" content="HSA Connect | Bảng tin" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Bảng tin{% endblock %}
+{% block content %}
 
 <style>
-  .youtube-wrap {
-    max-width: 560px;
-    margin-bottom: 1em;
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
   }
 
-  .youtube {
-    background: #000;
-    position: relative;
-    padding-top: 56.25%;
+  /* Shared styling */
+  .feed-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
     overflow: hidden;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Post creation card */
+  .post-creation-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 25px;
+  }
+
+  .post-creation-header {
+    padding: 20px;
+    background: var(--light-gradient);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .post-creation-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+  }
+
+  .post-creation-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-top: 5px;
+  }
+
+  .post-creation-body {
+    padding: 20px;
+  }
+
+  .post-creation-footer {
+    display: flex;
+    padding: 15px 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: #f9f9f9;
+  }
+
+  .post-preview {
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: var(--input-radius);
+    margin-top: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: none;
+  }
+
+  .post-preview-header {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Post card styling */
+  .post-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .post-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .post-author-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .post-author-info {
+    flex: 1;
+  }
+
+  .post-author-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .post-author-role {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-left: 5px;
+  }
+
+  .post-date {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .post-body {
+    padding: 0 20px 20px;
+    overflow-wrap: anywhere;
+    color: var(--text-medium);
+    line-height: 1.6;
+  }
+
+  .post-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .post-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 15px;
+  }
+
+  .post-action {
+    color: var(--text-medium);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    transition: color 0.2s ease;
     cursor: pointer;
   }
 
-  .youtube img {
+  .post-action:hover {
+    color: var(--primary);
+  }
+
+  .post-action.liked {
+    color: var(--danger);
+  }
+
+  /* Comments section */
+  .comments-section {
+    padding: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .comment {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .comment-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .comment-content {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 10px 15px;
+    border-radius: var(--input-radius);
+  }
+
+  .comment-author {
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+  }
+
+  .comment-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-left: 5px;
+  }
+
+  .comment-text {
+    margin-top: 5px;
+    color: var(--text-medium);
+  }
+
+  /* Form inputs */
+  .form-input {
     width: 100%;
-    height: auto;
-    top: -16.82%;
-    left: 0;
-    opacity: 0.7;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--input-radius);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    resize: vertical;
+    min-height: 100px;
+    transition: border 0.2s ease;
   }
 
-  .youtube-play {
-    width: 70px;
-    height: 50px;
-    z-index: 1;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 15px 15px 15px 15px / 45px 45px 45px 45px;
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
   }
 
-  .youtube-play:before {
-    content: "";
-    border-style: solid;
-    border-width: 10px 0 10px 18px;
-    border-color: transparent transparent transparent #fff;
-  }
-
-  .youtube:hover > .youtube-play {
-    background: red;
-  }
-
-  .youtube img,
-  .youtube-play {
+  /* Buttons */
+  .btn {
+    padding: 10px 18px;
+    border-radius: var(--button-radius);
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
   }
 
-  .youtube img,
-  .youtube iframe,
-  .youtube-play,
-  .youtube-play:before {
-    position: absolute;
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
   }
 
-  .youtube-play,
-  .youtube-play:before {
-    top: 50%;
-    left: 50%;
-    transform: translate3d(-50%, -50%, 0);
+  .btn-primary:hover {
+    box-shadow: 0 6px 15px rgba(110, 142, 251, 0.4);
+    transform: translateY(-2px);
   }
 
-  .youtube iframe {
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
+  .btn-secondary {
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--primary);
   }
 
-  .inputfile {
+  .btn-secondary:hover {
+    background: var(--primary-light);
+  }
+
+  /* File upload styling */
+  .file-upload-container {
+    margin-top: 15px;
+  }
+
+  .file-upload {
     width: 0.1px;
     height: 0.1px;
     opacity: 0;
@@ -86,430 +314,740 @@
     z-index: -1;
   }
 
-  .inputfile + label {
-    font-size: 1em;
-    font-weight: 700;
-    background-color: rgb(240, 240, 240);
-    padding: 1em;
-    height: 100%;
-  }
-
-  .inputfile:focus + label,
-  .inputfile + label:hover {
-    background-color: #ccc;
-  }
-
-  .inputfile + label {
+  .file-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--input-radius);
     cursor: pointer;
-    /* "hand" cursor */
+    transition: all 0.2s ease;
   }
 
-  .inputfile:focus + label {
-    outline: 1px dotted #000;
-    outline: -webkit-focus-ring-color auto 5px;
+  .file-upload-label:hover {
+    background: var(--primary-hover);
   }
 
-  .image-preview {
+  .file-name {
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  /* Image preview grid */
+  .image-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .image-preview-container {
     position: relative;
-    display: inline-block;
-    margin: 1em;
-    padding: 1em;
+    width: 100px;
+    height: 100px;
+    border-radius: var(--input-radius);
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   }
 
-  .image-preview:hover .image-preview-overlay {
-    opacity: 1;
+  .image-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .image-preview-overlay {
-    cursor: pointer;
-    user-select: none;
     position: absolute;
-    display: flex;
-    vertical-align: middle;
-    color: #f1f1f1;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    left: 0;
-    bottom: 0;
-    background-color: rgba(51, 51, 51, 0.6);
-    transition: 0.5s ease;
-    opacity: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: white;
-    text-align: center;
-    font-size: 16px;
-    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
   }
 
-  .tagged_user {
-    color: #0a66c2;
-    font-weight: 700;
+  .image-preview-container:hover .image-preview-overlay {
+    opacity: 1;
+  }
+
+  /* Progress bar */
+  .progress-container {
+    margin-top: 15px;
+    display: none;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0;
+    background: var(--gradient);
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  /* Slideshow container */
+  .slideshow-container {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  /* Privacy options */
+  .privacy-options {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+  }
+
+  .privacy-option {
+    padding: 8px 15px;
+    border-radius: var(--input-radius);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-medium);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .privacy-option.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .privacy-option:hover {
+    border-color: var(--primary);
+  }
+
+  /* Privacy labels */
+  .privacy-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    font-weight: 500;
+  }
+
+  .privacy-label.private {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-medium);
+  }
+
+  .privacy-label.close {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success);
+  }
+
+  .privacy-label.protected {
+    background: rgba(23, 162, 184, 0.1);
+    color: var(--info);
+  }
+
+  .privacy-label.public {
+    background: rgba(110, 142, 251, 0.1);
+    color: var(--primary);
+  }
+
+  /* End of feed message */
+  .end-feed-message {
+    text-align: center;
+    padding: 30px;
+    background: rgba(255, 193, 7, 0.1);
+    color: #b38200;
+    border-radius: var(--card-radius);
+    margin-top: 20px;
+    display: none;
+  }
+
+  .end-feed-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .end-feed-text {
+    color: var(--text-medium);
+  }
+
+  /* Error message */
+  .error-message {
+    background: rgba(255, 94, 135, 0.1);
+    color: var(--danger);
+    padding: 15px 20px;
+    border-radius: var(--input-radius);
+    margin-bottom: 20px;
+  }
+
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+  }
+
+  .modal-image {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 5px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .modal-close:hover {
+    transform: scale(1.1);
+  }
+
+  /* YouTube embed styling */
+  .youtube-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    border-radius: var(--input-radius);
+    margin-bottom: 20px;
+  }
+
+  .youtube-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .youtube-preview {
+    position: relative;
+    cursor: pointer;
+    border-radius: var(--input-radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .youtube-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .youtube-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+  }
+
+  .youtube-play-button:before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 20px;
+    border-color: transparent transparent transparent white;
+  }
+
+  .youtube-preview:hover .youtube-play-button {
+    background: rgba(255, 0, 0, 0.8);
+  }
+
+  /* Tagged users */
+  .tagged-user {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .tagged-user:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive design */
+  @media screen and (max-width: 768px) {
+    .feed-container {
+      padding: 15px;
+    }
+
+    .post-header {
+      padding: 12px 15px;
+      gap: 10px;
+    }
+
+    .post-author-avatar {
+      width: 40px;
+      height: 40px;
+    }
+
+    .post-body {
+      padding: 0 15px 15px;
+    }
+
+    .post-footer {
+      padding: 12px 15px;
+    }
+
+    .comments-section {
+      padding: 15px;
+    }
   }
 </style>
 
-<div class="modal" onclick="CloseModal();">
-  <div class="content">
-    <img src="" alt="" class="ui image fluid" />
-    <a class="close-icon" onclick="CloseModal();"
-      ><i class="icon close"></i> Close</a
-    >
+<!-- Image Viewer Modal -->
+<div class="modal-overlay" id="imageModal">
+  <div class="modal-content">
+    <img src="" class="modal-image" id="modalImage" alt="Expanded image">
+    <div class="modal-close" onclick="closeModal()"><i class="close icon"></i> Đóng</div>
   </div>
 </div>
 
-<div class="ui segment">
+<div class="feed-container">
+  <!-- Error messages -->
   {% if errors %}
-  <div class="ui message red">
-    <div class="header">Error:</div>
+  <div class="error-message">
+    <div class="error-title">Lỗi:</div>
     {% for item in errors %}
     <p>{{ item }}</p>
     {% endfor %}
   </div>
   {% endif %}
-  <div class="sixteen wide column">
-    <div class="ui segment basic">
-      <div id="post-make">
-        <p>
-          Supports markdown formatting, more info
-          <a href="https://www.markdownguide.org/basic-syntax/" target="_blank"
-            >here.</a
-          ><br />
-          Use @username to tag someone.
-        </p>
-        <form
-          id="make-post-form"
-          action="{{ url_for('posts.submit_post') }}"
-          class="ui form"
-          method="POST"
-        >
-          <div class="field">
-            <label>Content</label>
-            <label for=""></label>
-            <textarea
-              placeholder="Write a post..."
-              name="post_text"
-              id="post_text"
-              cols="3"
-              rows="10"
-              oninput="ShowPreview();"
-            ></textarea>
-          </div>
-          <div class="ui container">
-            <div class="ui images small" id="image-preview"></div>
-          </div>
 
-          <div class="two fields">
-            <div class="field" style="display: table">
-              <input
-                type="file"
-                class="inputfile"
-                name="files"
-                id="files"
-                multiple
-                accept="image/*"
-              />
-              <label
-                for="files"
-                style="display: table-cell; vertical-align: middle"
-                ><i class="icon image"></i> Upload images</label
-              >
-
-              <input
-                type="hidden"
-                name="allFileNames"
-                value=""
-                id="allFileNames"
-              />
-
-              <div
-                class="ui progress tiny"
-                id="image-upload-progress"
-                style="display: none"
-              >
-                <div class="bar" id="image-upload-progress-bar">
-                  <div class="progress"></div>
-                </div>
-                <div class="label">Uploading Files</div>
-              </div>
-            </div>
-            <div class="field">
-              <div class="field">
-                <label>Visibility</label>
-                <label for="privacy"></label
-                ><select id="privacy" name="privacy">
-                  <option value="private">&#128274; Private</option>
-                  <option value="close">&#129309; Close Friends</option>
-                  <option value="protected">&#128106; Connections</option>
-                  <option value="public" selected>&#128101; Public</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="ui horizontal divider"></div>
-        </form>
-      </div>
-      <div class="ui segment" id="post-preview-parent">
-        <div class="ui label top attached">Your post preview</div>
-        <div id="post-preview"></div>
+  <!-- Post creation card -->
+  <div class="post-creation-card">
+    <div class="post-creation-header">
+      <h2 class="post-creation-title">Tạo bài viết mới</h2>
+      <div class="post-creation-subtitle">
+        Hỗ trợ định dạng markdown,
+        <a href="https://www.markdownguide.org/basic-syntax/" target="_blank">xem thêm tại đây</a>.
+        Sử dụng @username để gắn thẻ người dùng.
       </div>
     </div>
+
+    <div class="post-creation-body">
+      <form id="make-post-form" action="{{ url_for('posts.submit_post') }}" method="POST">
+        <textarea class="form-input" placeholder="Viết bài đăng..." name="post_text" id="post_text"
+          oninput="showPreview();">
+        </textarea>
+
+        <div class="privacy-options">
+          <div class="privacy-option" data-value="private" onclick="selectPrivacy(this)">
+            <i class="lock icon"></i> Riêng tư
+          </div>
+          <div class="privacy-option" data-value="close" onclick="selectPrivacy(this)">
+            <i class="handshake outline icon"></i> Bạn thân
+          </div>
+          <div class="privacy-option" data-value="protected" onclick="selectPrivacy(this)">
+            <i class="users icon"></i> Kết nối
+          </div>
+          <div class="privacy-option active" data-value="public" onclick="selectPrivacy(this)">
+            <i class="globe icon"></i> Công khai
+          </div>
+          <input type="hidden" name="privacy" id="privacy" value="public">
+        </div>
+
+        <div class="image-previews" id="image-preview"></div>
+
+        <div class="file-upload-container">
+          <input type="file" class="file-upload" name="files" id="files" multiple accept="image/*">
+          <label for="files" class="file-upload-label">
+            <i class="image icon"></i> Tải lên ảnh
+          </label>
+          <input type="hidden" name="allFileNames" value="" id="allFileNames">
+        </div>
+
+        <div class="progress-container" id="image-upload-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="image-upload-progress-bar"></div>
+          </div>
+          <div class="progress-text">Đang tải ảnh...</div>
+        </div>
+
+        <div class="post-preview" id="post-preview-container">
+          <div class="post-preview-header">Xem trước bài viết</div>
+          <div id="post-preview"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="post-creation-footer">
+      <button type="submit" form="make-post-form" class="btn btn-primary">
+        <i class="paper plane icon"></i> Đăng bài
+      </button>
+    </div>
   </div>
-  <input
-    type="submit"
-    value="Make post"
-    class="ui button fluid teal"
-    form="make-post-form"
-  />
+
+  <!-- Posts container -->
+  <div id="postsContainer"></div>
+
+  <!-- End of feed message -->
+  <div class="end-feed-message" id="endFeedMessage">
+    <div class="end-feed-title">Rất tiếc, không còn bài viết nào để tải!</div>
+    <div class="end-feed-text">Hãy kết nối với nhiều người hơn để mở rộng bảng tin của bạn.</div>
+  </div>
 </div>
-
-<div id="postsContainer"></div>
-
-<div class="ui message orange">
-  <div class="header">Sorry, no more posts to load!</div>
-  <div>Try adding more connections to have a bigger feed page.</div>
-</div>
-
-<div class="ui horizontal divider hidden"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="../static/slideshow.js"></script>
+<script src="../static/FormatBody.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
 
 <link rel="stylesheet" href="../static/styles/slideshow.css" type="text/css" />
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/embed.min.css"
-/>
-
-<script src="../static/FormatBody.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/embed.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/embed.min.js"></script>
 
 <script>
-  function LoadVideo(elem) {
-    let id = $(elem).attr("data-link");
-
-    let html = `<iframe class="ui container" height="600" src="${id}" loading="lazy"></iframe>`;
-
-    $(elem).replaceWith(html);
-  }
-
+  // Global variables
   let maxPostId = "{{max_id}}";
+  let loadingPost = false;
+  let fileList = [];
 
-  function LoadNewPost(post) {
-    let comments = ``;
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function () {
+    // Load initial posts
+    loadPosts(5);
 
-    for (let comment of post.comments) {
-      comments += `<div class="comment">
-                            <a class="avatar" style="height: 2.5em;">
-                                <img src="${comment[5]}"  alt="">
-                            </a>
-                            <div class="content">
-                                <a class="author" href="/profile/${comment[1]}">${comment[1]}</a>
-                                <div class="metadata">
-                                    <span class="date">${comment[3]}</span>
-                                </div>
-                                <div class="text">${comment[2]}</div>
-                            </div>
-                        </div>`;
-    }
+    // Setup scroll event for infinite loading
+    window.addEventListener('scroll', function () {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
 
-    let re =
-      /(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
-    const yt_link = post.body.match(re); // array containing all elements of video
-
-    var youtube_video = "";
-    if (yt_link != null) {
-      var yt_id = yt_link[6];
-      youtube_video = `<div class="ui container"><div class="ui embed" data-source="youtube" data-id="${yt_id}" data-placeholder="https://img.youtube.com/vi/${yt_id}/hqdefault.jpg"></div></div>`;
-    }
-
-    let postBody = `<div class="sixteen wide column">
-                    <div class="ui container" style="overflow-wrap: anywhere;">${FormatBody(
-                      post.body
-                    )}</div>
-                </div>`;
-
-    let icon;
-    if (post.liked === true) {
-      icon = `<i class="heart icon red"></i>`;
-    } else {
-      icon = `<i class="heart icon"></i>`;
-    }
-
-    let comment_text;
-    if (post.comment_count == 1) {
-      comment_text = "comment";
-    } else {
-      comment_text = "comments";
-    }
-
-    var imagesToDisplay = [];
-
-    for (var image of post.images) {
-      imagesToDisplay.push(`/static/images/post_imgs/${image}.jpg`);
-    }
-
-    let privacy_text;
-    if (post.privacy == "close") {
-      privacy_text = `<div class="ui label icon basic green">
-                        Close Friends
-                      </div>`;
-    } else if (post.privacy == "private") {
-      privacy_text = `<div class="ui label icon basic gray">
-                        Private
-                      </div>`;
-    } else privacy_text = "";
-
-    let html = `<div class="ui segment" id="post-number-${post.postId}">
-            <div class="ui grid stackable">
-                <div class="one wide column">
-                    <img src="${post.profile_pic}" alt="" class="ui image centered round" style="border-radius: 100%" />
-                </div>
-                <div class="fifteen wide column">
-                    <div class="ui label">
-<a href="/profile/${post.author}">${post.author}</a>
-                        <div class="detail">${post.account_type}</div>
-                    </div>
-                    ${privacy_text}
-                    <a href="/post_page/${post.postId}">See full post</a>
-                    <div style="float: right">${post.date_posted}</div>
-                </div>
-                ${postBody}
-                <div class="sixteen wide column">
-                    <div id="post-gallery-${post.postId}"></div>
-                </div>
-                ${youtube_video}
-                <div class="sixteen wide column">
-                    <div>${post.comment_count} ${comment_text} &nbsp;&nbsp; ${post.like_count}
-                      ${icon}</div>
-                    <div class="ui comments">${comments}</div>
-                    <a href="/post_page/${post.postId}"><i class="icon pencil"></i>Write a comment</a>
-                </div>
-            </div>
-        </div>`;
-
-    $("#postsContainer").append(html);
-
-    $("#post-number-" + post.postId + " .ui.embed").embed();
-
-    setTimeout(function () {
-      if (imagesToDisplay.length > 0) {
-        new Slideshow(
-          "post-gallery-" + post.postId,
-          imagesToDisplay,
-          new Array(post.images.length).fill("")
-        );
+      if (scrollTop + clientHeight + 500 >= scrollHeight) {
+        loadPosts(5);
       }
-    }, 1000);
+    });
+  });
+
+  // Modal functions
+  function openModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
   }
 
-  let loadingPost = false;
+  function closeModal() {
+    document.getElementById('imageModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
 
-  function LoadPosts(number) {
+  // Post loading functions
+  function loadPosts(number) {
     if (loadingPost || maxPostId <= 0) return;
     loadingPost = true;
 
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        let json_response = JSON.parse(this.response);
-
+    fetch(`fetch_posts?number=${number}&starting_id=${maxPostId}`)
+      .then(response => response.json())
+      .then(data => {
         loadingPost = false;
 
-        for (let response of json_response.AllPosts) {
-          LoadNewPost(response);
-          maxPostId = Math.min(maxPostId, response.postId - 1);
+        if (data.AllPosts.length === 0) {
+          document.getElementById('endFeedMessage').style.display = 'block';
+          return;
         }
-      }
-    };
 
-    xhttp.open(
-      "GET",
-      "fetch_posts?number=" + number + "&starting_id=" + maxPostId
-    );
-    xhttp.send();
+        for (let post of data.AllPosts) {
+          loadNewPost(post);
+          maxPostId = Math.min(maxPostId, post.postId - 1);
+        }
+      })
+      .catch(error => {
+        console.error('Error loading posts:', error);
+        loadingPost = false;
+      });
   }
 
-  $(window).on("scroll", function () {
-    let scrollHeight = $(document).height();
-    let scrollPosition = $(window).height() + $(window).scrollTop();
-    if (scrollPosition + 500 >= scrollHeight) {
-      LoadPosts(5);
+  function loadNewPost(post) {
+    // Create comments HTML
+    let commentsHTML = '';
+    for (let comment of post.comments) {
+      commentsHTML += `
+        <div class="comment">
+          <img src="${comment[5]}" class="comment-avatar" alt="">
+          <div class="comment-content">
+            <a href="/profile/${comment[1]}" class="comment-author">${comment[1]}</a>
+            <span class="comment-date">${comment[3]}</span>
+            <div class="comment-text">${comment[2]}</div>
+          </div>
+        </div>`;
     }
-  });
 
-  LoadPosts(5);
-</script>
+    // Check for YouTube videos
+    let re = /(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
+    const ytLink = post.body.match(re);
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
+    let youtubeHTML = '';
+    if (ytLink != null) {
+      const ytId = ytLink[6];
+      youtubeHTML = `
+        <div class="youtube-container">
+          <div class="ui embed" data-source="youtube" data-id="${ytId}" 
+               data-placeholder="https://img.youtube.com/vi/${ytId}/hqdefault.jpg"></div>
+        </div>`;
+    }
 
-<script>
-  var fileInput = document.getElementById("files");
-  var fileList = [];
+    // Determine like icon
+    let likeIcon = post.liked ?
+      `<i class="heart icon red"></i>` :
+      `<i class="heart outline icon"></i>`;
 
-  fileInput.addEventListener("change", function (event) {
+    // Determine comment text
+    let commentText = post.comment_count === 1 ? "bình luận" : "bình luận";
+
+    // Create image slideshow html if images exist
+    let slideshowHTML = '';
+    if (post.images && post.images.length > 0) {
+      slideshowHTML = `<div id="post-gallery-${post.postId}" class="slideshow-container"></div>`;
+    }
+
+    // Determine privacy text/label
+    let privacyHTML = '';
+    if (post.privacy === "close") {
+      privacyHTML = `<span class="privacy-label close"><i class="handshake outline icon"></i> Bạn thân</span>`;
+    } else if (post.privacy === "private") {
+      privacyHTML = `<span class="privacy-label private"><i class="lock icon"></i> Riêng tư</span>`;
+    } else if (post.privacy === "protected") {
+      privacyHTML = `<span class="privacy-label protected"><i class="users icon"></i> Kết nối</span>`;
+    } else if (post.privacy === "public") {
+      privacyHTML = `<span class="privacy-label public"><i class="globe icon"></i> Công khai</span>`;
+    }
+
+    // Create post card HTML
+    const postHTML = `
+      <div class="post-card" id="post-number-${post.postId}">
+        <div class="post-header">
+          <img src="${post.profile_pic}" alt="" class="post-author-avatar">
+          <div class="post-author-info">
+            <a href="/profile/${post.author}" class="post-author-name">${post.author}</a>
+            <span class="post-author-role">${post.account_type}</span>
+            ${privacyHTML}
+          </div>
+          <div class="post-date">${post.date_posted}</div>
+        </div>
+        
+        <div class="post-body">
+          <div>${FormatBody(post.body)}</div>
+          ${slideshowHTML}
+          ${youtubeHTML}
+        </div>
+        
+        <div class="post-footer">
+          <div class="post-stats">
+            <div><i class="comment outline icon"></i> ${post.comment_count} ${commentText}</div>
+            <div>${likeIcon} ${post.like_count}</div>
+          </div>
+          <div class="post-actions">
+            <a href="/post_page/${post.postId}" class="post-action">
+              <i class="eye icon"></i> Xem chi tiết
+            </a>
+            <a href="/post_page/${post.postId}" class="post-action">
+              <i class="comment outline icon"></i> Bình luận
+            </a>
+          </div>
+        </div>
+        
+        ${post.comments.length > 0 ? `<div class="comments-section">${commentsHTML}</div>` : ''}
+      </div>`;
+
+    // Add post to container
+    document.getElementById('postsContainer').insertAdjacentHTML('beforeend', postHTML);
+
+    // Initialize YouTube embeds
+    $('#post-number-' + post.postId + ' .ui.embed').embed();
+
+    // Initialize slideshow if there are images
+    if (post.images && post.images.length > 0) {
+      setTimeout(function () {
+        const imagesToDisplay = post.images.map(img => `/static/images/post_imgs/${img}.jpg`);
+        new Slideshow(
+          'post-gallery-' + post.postId,
+          imagesToDisplay,
+          new Array(post.images.length).fill("")
+        );
+      }, 500);
+    }
+  }
+
+  // Post creation functions
+  function showPreview() {
+    const postText = document.getElementById('post_text').value.trim();
+    const previewContainer = document.getElementById('post-preview-container');
+    const previewContent = document.getElementById('post-preview');
+
+    if (postText.length > 0) {
+      previewContainer.style.display = 'block';
+      previewContent.innerHTML = FormatBody(postText);
+    } else {
+      previewContainer.style.display = 'none';
+    }
+  }
+
+  function selectPrivacy(element) {
+    // Remove active class from all options
+    document.querySelectorAll('.privacy-option').forEach(option => {
+      option.classList.remove('active');
+    });
+
+    // Add active class to selected option
+    element.classList.add('active');
+
+    // Update hidden input
+    document.getElementById('privacy').value = element.dataset.value;
+  }
+
+  // File upload handling
+  document.getElementById('files').addEventListener('change', function (event) {
     fileList = [];
+    const formData = new FormData();
+    const progressContainer = document.getElementById('image-upload-progress');
+    const progressBar = document.getElementById('image-upload-progress-bar');
 
-    var formData = new FormData();
-
-    if (fileInput.files.length > 0) {
-      document.getElementById("image-upload-progress").style.display = "block";
+    if (this.files.length > 0) {
+      progressContainer.style.display = 'block';
     }
 
-    for (var i = 0; i < fileInput.files.length; i++) {
-      var file = fileInput.files[i];
+    for (let i = 0; i < this.files.length; i++) {
+      const file = this.files[i];
       fileList.push(file);
-
       formData.append(file.name, file);
     }
 
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        var arr = JSON.parse(this.response);
+    fetch('upload_file', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        const previewContainer = document.getElementById('image-preview');
 
-        for (var i = 0; i < arr.length; i++) {
-          var url = URL.createObjectURL(fileList[i]);
-          document.getElementById("image-preview").innerHTML += `
-                    <div class="image-preview" data-file="${arr[i]}">
-                        <img src="${url}">
-                        <div class="image-preview-overlay" onclick="deleteFile('${arr[i]}')"> <i class="icon delete"></i> Delete</div>
-                    </div>`;
+        for (let i = 0; i < data.length; i++) {
+          const url = URL.createObjectURL(fileList[i]);
+          previewContainer.innerHTML += `
+          <div class="image-preview-container" data-file="${data[i]}">
+            <img src="${url}" class="image-preview-img">
+            <div class="image-preview-overlay" onclick="deleteFile('${data[i]}')">
+              <i class="trash alternate icon"></i>
+            </div>
+          </div>`;
         }
-        document.getElementById("allFileNames").value = arr.join(",");
-      }
-    };
-    xhttp.addEventListener("progress", function (event) {
-      document.getElementById("image-upload-progress-bar").style.width =
-        (100 * event.loaded) / event.total + "%";
-    });
-    xhttp.open("POST", "upload_file");
-    xhttp.send(formData);
+
+        document.getElementById('allFileNames').value = data.join(',');
+        progressContainer.style.display = 'none';
+      })
+      .catch(error => {
+        console.error('Error uploading files:', error);
+        progressContainer.style.display = 'none';
+      });
+
+    // Simulate progress (since we don't have real progress events)
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      progressBar.style.width = `${Math.min(progress, 95)}%`;
+      if (progress >= 95) clearInterval(interval);
+    }, 100);
   });
 
   function deleteFile(fileName) {
-    let deleteImageCall = new XMLHttpRequest();
+    fetch(`delete_file?filename=${fileName}`, {
+      method: 'POST'
+    })
+      .then(() => {
+        const element = document.querySelector(`[data-file='${fileName}']`);
+        if (element) element.remove();
 
-    deleteImageCall.open("POST", "delete_file?filename=" + fileName);
-    deleteImageCall.send();
-
-    var elem = document.querySelector("[data-file='" + fileName + "']");
-    elem.parentNode.removeChild(elem);
-
-    var arr = [];
-    var imgs = document.querySelectorAll(".image-preview");
-    for (var img of imgs) {
-      arr.push(img.getAttribute("data-file"));
-    }
-    document.getElementById("allFileNames").value = arr.join(",");
+        // Update hidden input with remaining files
+        const remainingFiles = [];
+        document.querySelectorAll('.image-preview-container').forEach(preview => {
+          remainingFiles.push(preview.getAttribute('data-file'));
+        });
+        document.getElementById('allFileNames').value = remainingFiles.join(',');
+      })
+      .catch(error => console.error('Error deleting file:', error));
   }
 
-  function ShowPreview() {
-    var value = document.getElementById("post_text").value;
+  // YouTube video loading
+  function loadVideo(element) {
+    const videoLink = element.getAttribute('data-link');
+    const iframe = document.createElement('iframe');
 
-    document.getElementById("post-preview-parent").style.display =
-      value.length > 0 ? "block" : "none";
-    document.getElementById("post-preview").innerHTML = FormatBody(value);
+    iframe.setAttribute('src', videoLink);
+    iframe.setAttribute('width', '100%');
+    iframe.setAttribute('height', '500');
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.setAttribute('loading', 'lazy');
+
+    element.parentNode.replaceChild(iframe, element);
   }
-  ShowPreview();
+
+  // Initialize post preview (in case there's already text)
+  showPreview();
 </script>
 
-{%endblock%}
+{% endblock %}
