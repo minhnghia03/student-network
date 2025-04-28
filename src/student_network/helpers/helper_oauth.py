@@ -4,16 +4,17 @@ import sqlite3
 from flask import redirect
 from datetime import date
 import helpers.helper_general as helper_general
+import os
 
 
 def oauth_login(code: str, session: dict) -> str:
     response = requests.post(
-        "http://localhost:8080/local/oauth/token.php",
+        os.getenv("OAUTH_TOKEN_URL"),
         data={
             "grant_type": "authorization_code",
             "code": code,
             "client_id": "hsa-connect",
-            "client_secret": "39086837c1bbba8a8598f01a8cad5c698325a63edbfd0b9d",
+            "client_secret": os.getenv("CLIENT_SECRET"),
             "scope": "user_info",
         },
     )
@@ -22,7 +23,7 @@ def oauth_login(code: str, session: dict) -> str:
         raise Exception("Failed to get access token")
     access_token = response.json()["access_token"]
     response = requests.post(
-        "http://localhost:8080/local/oauth/user_info.php",
+        os.getenv("OAUTH_USER_INFO_URL"),
         data={"access_token": access_token},
     )
     if response.status_code != 200:

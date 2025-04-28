@@ -19,6 +19,9 @@ import views.quizzes as quizzes
 import views.staff as staff
 from flask import Flask, request, session
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
