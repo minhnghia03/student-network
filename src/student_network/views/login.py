@@ -11,6 +11,7 @@ import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
 import helpers.helper_login as helper_login
 from flask import Blueprint, redirect, render_template, request, session
+import helpers.helper_oauth as helper_oauth
 
 login_blueprint = Blueprint(
     "login", __name__, static_folder="static", template_folder="templates"
@@ -40,6 +41,12 @@ def login_page() -> object:
     Returns:
         The web page for user login.
     """
+    # get the code
+    if request.args.get("code"):
+        try:
+            helper_oauth.oauth_login(request.args.get("code"), session)
+        except Exception as e:
+            pass
     errors = []
     if "username" in session:
         return redirect("/profile")
@@ -102,7 +109,8 @@ def login_submit() -> object:
         cur = conn.cursor()
         # Gets user from database using username.
         cur.execute(
-            "SELECT password, type FROM ACCOUNTS WHERE username=?;", (username,)
+            "SELECT password, type FROM ACCOUNTS WHERE username=? and moodle_id is NULL;",
+            (username,),
         )
         conn.commit()
         row = cur.fetchone()

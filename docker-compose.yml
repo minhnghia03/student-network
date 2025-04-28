@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  moodle:
+    image: bitnami/moodle:latest
+    container_name: moodle
+    restart: always
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - MOODLE_USERNAME=admin
+      - MOODLE_PASSWORD=admin123
+      - MOODLE_EMAIL=admin@example.com
+      - MOODLE_SITE_NAME="HSA Connect"
+      - MOODLE_DATABASE_TYPE=pgsql
+      - MOODLE_DATABASE_HOST=db
+      - MOODLE_DATABASE_PORT_NUMBER=5432
+      - MOODLE_DATABASE_USER=admin
+      - MOODLE_DATABASE_PASSWORD=admin
+      - MOODLE_DATABASE_NAME=moodle
+    volumes:
+      - moodle_app:/bitnami/moodle
+      - moodle_data:/bitnami/moodledata
+    networks:
+      - hsa_network
+
+  db:
+    container_name: postgres_container
+    image: postgres:16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: moodle
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_init.sql:/docker-entrypoint-initdb.d/postgres_init.sql
+    networks:
+      - hsa_network
+
+volumes:
+  moodle_app:
+  moodle_data:
+  postgres_data:
+
+networks:
+  hsa_network:
+    driver: bridge
