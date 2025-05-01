@@ -4,7 +4,6 @@ the Flask module. Students each have their own profile page, and they can post
 on their feed.
 """
 
-import os
 from datetime import datetime
 
 import views.achievements as achievements

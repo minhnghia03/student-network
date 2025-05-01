@@ -13,7 +13,7 @@ def oauth_login(code: str, session: dict) -> str:
         data={
             "grant_type": "authorization_code",
             "code": code,
-            "client_id": "hsa-connect",
+            "client_id": os.getenv("OAUTH_CLIENT_ID"),
             "client_secret": os.getenv("CLIENT_SECRET"),
             "scope": "user_info",
         },
