@@ -46,6 +46,7 @@ def login_page() -> object:
         try:
             helper_oauth.oauth_login(request.args.get("code"), session)
         except Exception as e:
+            print(e)
             pass
     errors = []
     if "username" in session:

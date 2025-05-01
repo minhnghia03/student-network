@@ -17,10 +17,7 @@ import views.quizzes as quizzes
 import views.staff as staff
 from flask import Flask, request, session
 from flask_socketio import SocketIO
-from dotenv import load_dotenv
 from db import connect_to_db
-
-load_dotenv()
 
 
 app = Flask(__name__)
@@ -79,4 +76,4 @@ def private_message(payload):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host="0.0.0.0")

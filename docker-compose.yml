@@ -40,9 +40,12 @@ services:
     networks:
       - hsa_network
   server:
+    container_name: server
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     networks:
@@ -50,7 +53,7 @@ services:
     volumes:
       - ./src:/app/src
       - .env:/app/.env
-    command: ["uv", "run", "src/student_network/app.py", "--host", "0.0.0.0", "--port", "5000"]
+    command: ["uv", "run", "src/student_network/app.py"]
 
 volumes:
   moodle_app:

@@ -27,4 +27,4 @@ COPY ./src .env  ./
 
 EXPOSE 5000
 
-CMD ["uv", "run", "src/student_network/app.py", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uv", "run", "src/student_network/app.py"]
