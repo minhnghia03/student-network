@@ -16,9 +16,7 @@ import helpers.helper_profile as helper_profile
 from flask import request, session
 from PIL import Image
 from werkzeug.utils import secure_filename
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
+from constants import BASE_DIR
 
 
 def check_if_liked(cur, post_id: int, username: str) -> bool:
@@ -208,7 +206,13 @@ def upload_image(file):
     if helper_general.is_allowed_photo_file(file.filename):
         secure_filename(file.filename)
         file_name_hashed = str(uuid.uuid4())
-        file_path = os.path.join("./static/images" + "//post_imgs", file_name_hashed)
+        file_path = os.path.join(
+            BASE_DIR,
+            "static",
+            "images",
+            "post_imgs",
+            file_name_hashed,
+        )
 
         img = Image.open(file)
         fixed_height = 600
