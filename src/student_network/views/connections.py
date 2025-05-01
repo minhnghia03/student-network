@@ -2,7 +2,7 @@
 Handles the view for user connections and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 from datetime import date
 
 import helpers.helper_achievements as helper_achievements
@@ -28,20 +28,20 @@ def close_connection(username: str) -> object:
         Redirection to the profile of the user they want to connect with.
     """
     if session["username"] != username:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+            cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             if cur.fetchone():
                 conn_type = helper_connections.get_connection_type(username)
                 if conn_type == "connected":
                     cur.execute(
-                        "SELECT * FROM CloseFriend WHERE (user1=? AND user2=?);",
+                        "SELECT * FROM close_friend WHERE (user1=%s AND user2=%s);",
                         (session["username"], username),
                     )
                     if cur.fetchone() is None:
                         # Gets user from database using username.
                         cur.execute(
-                            "INSERT INTO CloseFriend (user1, user2) VALUES (?,?);",
+                            "INSERT INTO close_friend (user1, user2) VALUES (%s,%s);",
                             (
                                 session["username"],
                                 username,
@@ -68,20 +68,20 @@ def connect_request(username: str) -> object:
         Redirection to the profile of the user they want to connect with.
     """
     if session["username"] != username:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+            cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             if cur.fetchone():
                 cur.execute(
-                    "SELECT * FROM Connection WHERE (user1=? AND user2=?) OR "
-                    "(user1=? AND user2=?);",
+                    "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
+                    "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
                 if cur.fetchone() is None:
                     # Gets user from database using username.
                     cur.execute(
-                        "INSERT INTO Connection (user1, user2, "
-                        "connection_type) VALUES (?,?,?);",
+                        "INSERT INTO connection (user1, user2, "
+                        "connection_type) VALUES (%s,%s,%s);",
                         (
                             session["username"],
                             username,
@@ -93,15 +93,15 @@ def connect_request(username: str) -> object:
 
                     # Award achievement ID 17 - Getting social if necessary
                     cur.execute(
-                        "SELECT * FROM CompleteAchievements "
-                        "WHERE (username=? AND achievement_ID=?);",
+                        "SELECT * FROM complete_achievements "
+                        "WHERE (username=%s AND achievement_id=%s);",
                         (session["username"], 17),
                     )
                     if cur.fetchone() is None:
                         cur.execute(
-                            "INSERT INTO CompleteAchievements "
-                            "(username, achievement_ID, date_completed) "
-                            "VALUES (?,?,?);",
+                            "INSERT INTO complete_achievements "
+                            "(username, achievement_id, date_completed) "
+                            "VALUES (%s,%s,%s);",
                             (session["username"], 17, date.today()),
                         )
                         conn.commit()
@@ -122,14 +122,14 @@ def unblock_user(username: str) -> object:
     Returns:
         Redirection to the unblocked user's profile page.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+        cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
         if cur.fetchone():
             if helper_connections.get_connection_type(username) == "block":
                 if username != session["username"]:
                     cur.execute(
-                        "DELETE FROM Connection WHERE (user1=? AND user2=?);",
+                        "DELETE FROM connection WHERE (user1=%s AND user2=%s);",
                         (session["username"], username),
                     )
                     conn.commit()
@@ -166,21 +166,21 @@ def accept_connection_request(username: str) -> object:
         Redirection to the profile of the user they want to connect with.
     """
     if session["username"] != username:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+            cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             if cur.fetchone():
                 row = cur.execute(
-                    "SELECT * FROM Connection WHERE (user1=? AND user2=?) OR "
-                    "(user1=? AND user2=?);",
+                    "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
+                    "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
                 if row:
                     # Gets user from database using username.
                     cur.execute(
-                        "UPDATE Connection SET connection_type = ? "
-                        "WHERE (user1=? AND user2=?) OR (user1=? AND "
-                        "user2=?);",
+                        "UPDATE connection SET connection_type = %s "
+                        "WHERE (user1=%s AND user2=%s) OR (user1=%s AND "
+                        "user2=%s);",
                         (
                             "connected",
                             username,
@@ -213,12 +213,12 @@ def block_user(username: str) -> object:
     deleted = helper_connections.delete_connection(username)
     if deleted:
         if username != session["username"]:
-            with sqlite3.connect("db.sqlite3") as conn:
+            with connect_to_db() as conn:
                 cur = conn.cursor()
                 # Gets user from database using username.
                 cur.execute(
-                    "INSERT INTO Connection (user1, user2, "
-                    "connection_type) VALUES (?,?,?);",
+                    "INSERT INTO connection (user1, user2, "
+                    "connection_type) VALUES (%s,%s,%s);",
                     (
                         session["username"],
                         username,
@@ -243,18 +243,18 @@ def remove_close_friend(username: str) -> object:
     # Checks that the user isn't trying to remove a connection with
     # themselves.
     if username != session["username"]:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+            cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             # Searches for the connection in the database.
         if helper_connections.get_connection_type(username) == "connected":
             cur.execute(
-                "SELECT * FROM CloseFriend WHERE (user1=? AND user2=?);",
+                "SELECT * FROM close_friend WHERE (user1=%s AND user2=%s);",
                 (session["username"], username),
             )
             if cur.fetchone():
                 cur.execute(
-                    "DELETE FROM CloseFriend WHERE (user1=? AND user2=?);",
+                    "DELETE FROM close_friend WHERE (user1=%s AND user2=%s);",
                     (session["username"], username),
                 )
                 conn.commit()
@@ -285,7 +285,7 @@ def show_connect_requests() -> object:
     Returns:
         The web page for viewing connect requests.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         # Loads the list of connection requests and their avatars.
         requests = []
         avatars = []
@@ -293,9 +293,9 @@ def show_connect_requests() -> object:
 
         # Extracts incoming requests.
         cur.execute(
-            "SELECT Connection.user1, UserProfile.profilepicture FROM "
-            "Connection LEFT JOIN UserProfile ON Connection.user1 = "
-            "UserProfile.username WHERE user2=? AND connection_type=?;",
+            "SELECT connection.user1, user_profile.profilepicture FROM "
+            "connection LEFT JOIN user_profile ON connection.user1 = "
+            "user_profile.username WHERE user2=%s AND connection_type=%s;",
             (session["username"], "request"),
         )
         conn.commit()
@@ -307,34 +307,34 @@ def show_connect_requests() -> object:
 
         # Extracts connections.
         cur.execute(
-            "SELECT Connection.user1, UserProfile.profilepicture FROM "
-            "Connection LEFT JOIN UserProfile ON Connection.user1 = "
-            "UserProfile.username WHERE user2=? AND connection_type=?;",
+            "SELECT connection.user1, user_profile.profilepicture FROM "
+            "connection LEFT JOIN user_profile ON connection.user1 = "
+            "user_profile.username WHERE user2=%s AND connection_type=%s;",
             (session["username"], "connected"),
         )
         connections1 = cur.fetchall()
         cur.execute(
-            "SELECT Connection.user2, UserProfile.profilepicture FROM "
-            "Connection LEFT JOIN UserProfile ON Connection.user2 = "
-            "UserProfile.username WHERE user1=? AND connection_type=?;",
+            "SELECT connection.user2, user_profile.profilepicture FROM "
+            "connection LEFT JOIN user_profile ON connection.user2 = "
+            "user_profile.username WHERE user1=%s AND connection_type=%s;",
             (session["username"], "connected"),
         )
         connections2 = cur.fetchall()
 
         # Extracts pending requests.
         cur.execute(
-            "SELECT Connection.user2, UserProfile.profilepicture FROM "
-            "Connection LEFT JOIN UserProfile ON Connection.user2 = "
-            "UserProfile.username WHERE user1=? AND connection_type=?;",
+            "SELECT connection.user2, user_profile.profilepicture FROM "
+            "connection LEFT JOIN user_profile ON connection.user2 = "
+            "user_profile.username WHERE user1=%s AND connection_type=%s;",
             (session["username"], "request"),
         )
         pending_connections = cur.fetchall()
 
         # Extracts blocked users.
         cur.execute(
-            "SELECT Connection.user2, UserProfile.profilepicture FROM "
-            "Connection LEFT JOIN UserProfile ON Connection.user2 = "
-            "UserProfile.username WHERE user1=? AND connection_type=?;",
+            "SELECT connection.user2, user_profile.profilepicture FROM "
+            "connection LEFT JOIN user_profile ON connection.user2 = "
+            "user_profile.username WHERE user1=%s AND connection_type=%s;",
             (session["username"], "block"),
         )
         blocked_connections = cur.fetchall()

@@ -2,17 +2,13 @@
 Performs checks and actions to help the general system work effectively.
 """
 
-import os
-import sqlite3
+from db import connect_to_db
 from datetime import datetime
 from math import floor
 from typing import Tuple
 
 import helpers.helper_profile as helper_profile
 from flask import session
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 def is_allowed_photo_file(file_name) -> bool:
@@ -51,13 +47,13 @@ def get_all_connections(username: str) -> list:
     Returns:
         A list of all usernames that are connected to the logged in user.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT user2 FROM Connection "
-            "WHERE user1=? AND connection_type='connected' UNION ALL "
-            "SELECT user1 FROM Connection "
-            "WHERE user2=? AND connection_type='connected'",
+            "SELECT user2 FROM connection "
+            "WHERE user1=%s AND connection_type='connected' UNION ALL "
+            "SELECT user1 FROM connection "
+            "WHERE user2=%s AND connection_type='connected'",
             (username, username),
         )
         connections = cur.fetchall()
@@ -72,9 +68,9 @@ def get_all_usernames() -> list:
     Returns:
         A list of all usernames that have been registered.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT username FROM Accounts")
+        cur.execute("SELECT username FROM accounts")
 
         row = cur.fetchall()
 
@@ -82,11 +78,11 @@ def get_all_usernames() -> list:
 
 
 def get_notifications():
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         cur.execute(
-            "SELECT body, date, url FROM notification WHERE username=? ORDER "
+            "SELECT body, date, url FROM notification WHERE username=%s ORDER "
             "BY date DESC",
             (session["username"],),
         )
@@ -98,10 +94,7 @@ def get_notifications():
                 lambda x: (
                     x[0],
                     display_short_notification_age(
-                        (
-                            datetime.now()
-                            - datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S")
-                        ).total_seconds()
+                        (datetime.now() - x[1]).total_seconds()
                     ),
                     x[2],
                 ),
@@ -121,10 +114,11 @@ def check_level_exists(username: str, conn):
         conn: The connection to the database.
     """
     cur = conn.cursor()
-    cur.execute("SELECT * FROM UserLevel WHERE username=?;", (username,))
+    cur.execute("SELECT * FROM user_level WHERE username=%s;", (username,))
     if cur.fetchone() is None:
         cur.execute(
-            "INSERT INTO UserLevel (username, experience) VALUES (?, ?);", (username, 0)
+            "INSERT INTO user_level (username, experience) VALUES (%s, %s);",
+            (username, 0),
         )
         conn.commit()
 
@@ -136,17 +130,17 @@ def get_messages(username: str):
     Args:
         username: user to get messages of
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         cur.execute(
-            "SELECT message, sender, date FROM PrivateMessages WHERE (sender=? AND receiver=?) ",
+            "SELECT message, sender, date FROM private_messages WHERE (sender=%s AND receiver=%s) ",
             (session["username"], username),
         )
         row = cur.fetchall()
 
         cur.execute(
-            "SELECT message, sender, date FROM PrivateMessages WHERE (sender=? AND receiver=?) ",
+            "SELECT message, sender, date FROM private_messages WHERE (sender=%s AND receiver=%s) ",
             (username, session["username"]),
         )
         row += cur.fetchall()
@@ -169,9 +163,7 @@ def recent_message(date: str) -> Tuple[str, int]:
     Returns:
         [type]: [description]
     """
-    seconds = (
-        datetime.now() - datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    ).total_seconds()
+    seconds = (datetime.now() - date).total_seconds()
     elapsed = display_short_notification_age(seconds)
 
     return (elapsed, seconds)
@@ -213,7 +205,7 @@ def one_exp(cur, username: str):
         username: user to award exp to
     """
     cur.execute(
-        "UPDATE UserLevel SET experience = experience + 1 WHERE username=?;",
+        "UPDATE user_level SET experience = experience + 1 WHERE username=%s;",
         (username,),
     )
 
@@ -228,11 +220,11 @@ def get_exp(username: str):
     Returns:
         exp of user
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         check_level_exists(username, conn)
         # Get user experience
-        cur.execute("SELECT experience FROM UserLevel WHERE username=?;", (username,))
+        cur.execute("SELECT experience FROM user_level WHERE username=%s;", (username,))
         row = cur.fetchone()
 
         return int(row[0])
@@ -241,11 +233,11 @@ def get_exp(username: str):
 def new_notification(body, url):
     now = datetime.now()
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         cur.execute(
-            "INSERT INTO notification (username, body, date, url) VALUES (?, ?, ?, ?);",
+            "INSERT INTO notification (username, body, date, url) VALUES (%s, %s, %s, %s);",
             (session["username"], body, now.strftime("%Y-%m-%d %H:%M:%S"), url),
         )
 
@@ -255,11 +247,11 @@ def new_notification(body, url):
 def new_notification_username(username, body, url):
     now = datetime.now()
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         cur.execute(
-            "INSERT INTO notification (username, body, date, url) VALUES (?, ?, ?, ?);",
+            "INSERT INTO notification (username, body, date, url) VALUES (%s, %s, %s, %s);",
             (username, body, now.strftime("%Y-%m-%d %H:%M:%S"), url),
         )
 

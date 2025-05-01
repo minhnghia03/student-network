@@ -2,13 +2,12 @@
 Handles the view for user profiles and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 from datetime import datetime
 
 import helpers.helper_achievements as helper_achievements
 import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
-import helpers.helper_login as helper_login
 import helpers.helper_profile as helper_profile
 import helpers.helper_posts as helper_posts
 import helpers.helper_flashcards as helper_flashcards
@@ -57,12 +56,12 @@ def profile(username: str) -> object:
     if "register_details" in session:
         session.pop("register_details", None)
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         # Gets user from database using username.
         cur.execute(
             "SELECT name, bio, gender, birthday, profilepicture, privacy FROM "
-            "UserProfile WHERE username=?;",
+            "user_profile WHERE username=%s;",
             (username,),
         )
         row = cur.fetchall()
@@ -94,7 +93,7 @@ def profile(username: str) -> object:
             # Gets the user's posts regardless of post settings if user is the
             # owner of the profile.
             cur.execute(
-                "SELECT * FROM POSTS WHERE username=? AND privacy!='deleted'",
+                "SELECT * FROM posts WHERE username=%s AND privacy!='deleted'",
                 (username,),
             )
             sort_posts = cur.fetchall()
@@ -153,7 +152,7 @@ def profile(username: str) -> object:
                 if their_close_friend:
                     cur.execute(
                         "SELECT * "
-                        "FROM POSTS WHERE username=? "
+                        "FROM posts WHERE username=%s "
                         "AND privacy not in "
                         "('private', 'deleted');",
                         (username,),
@@ -162,7 +161,7 @@ def profile(username: str) -> object:
                 else:
                     cur.execute(
                         "SELECT * "
-                        "FROM POSTS WHERE username=? "
+                        "FROM posts WHERE username=%s "
                         "AND privacy not in "
                         "('private', 'deleted', 'close');",
                         (username,),
@@ -170,7 +169,7 @@ def profile(username: str) -> object:
                     sort_posts = cur.fetchall()
             else:
                 cur.execute(
-                    "SELECT * FROM POSTS WHERE username=? AND privacy=='public' ",
+                    "SELECT * FROM posts WHERE username=%s AND privacy=='public' ",
                     (username,),
                 )
                 sort_posts = cur.fetchall()
@@ -179,7 +178,7 @@ def profile(username: str) -> object:
     else:
         # Only public posts can be viewed when not logged in
         cur.execute(
-            "SELECT * FROM POSTS WHERE username=? AND privacy='public'", (username,)
+            "SELECT * FROM posts WHERE username=%s AND privacy='public'", (username,)
         )
         sort_posts = cur.fetchall()
 
@@ -210,12 +209,12 @@ def profile(username: str) -> object:
             icon = "users"
 
         # Get number of comments
-        cur.execute("SELECT * FROM comments WHERE postId=?", (user_post[0],))
+        cur.execute("SELECT * FROM comments WHERE post_id=%s;", (user_post[0],))
         comment_count = len(cur.fetchall())
 
         liked = helper_posts.check_if_liked(cur, user_post[0], session["username"])
 
-        time = datetime.strptime(user_post[4], "%Y-%m-%d").strftime("%d-%m-%y")
+        time = user_post[4].strftime("%d-%m-%y")
         user_posts["UserPosts"].append(
             {
                 "postId": user_post[0],
@@ -236,34 +235,34 @@ def profile(username: str) -> object:
     total_posts = len(user_posts["UserPosts"])
 
     # Gets account type.
-    cur.execute("SELECT type FROM ACCOUNTS WHERE username=?;", (username,))
+    cur.execute("SELECT type FROM accounts WHERE username=%s;", (username,))
     row = cur.fetchall()
     account_type = row[0][0]
 
     # Gets users degree.
     cur.execute(
         "SELECT degree FROM  "
-        "Degree WHERE degreeId = (SELECT degree "
-        "FROM UserProfile WHERE username=?);",
+        "degree WHERE degree_id = (SELECT degree "
+        "FROM user_profile WHERE username=%s);",
         (username,),
     )
     row = cur.fetchone()
     degree = row[0]
 
     # Gets the user's hobbies.
-    cur.execute("SELECT hobby FROM UserHobby WHERE username=?;", (username,))
+    cur.execute("SELECT hobby FROM user_hobby WHERE username=%s;", (username,))
     row = cur.fetchall()
     if len(row) > 0:
         hobbies = row
 
     # Gets the user's interests.
-    cur.execute("SELECT interest FROM UserInterests WHERE username=?;", (username,))
+    cur.execute("SELECT interest FROM user_interests WHERE username=%s;", (username,))
     row = cur.fetchall()
     if len(row) > 0:
         interests = row
 
     # Gets the user's email
-    cur.execute("SELECT email from ACCOUNTS WHERE username=?;", (username,))
+    cur.execute("SELECT email from accounts WHERE username=%s;", (username,))
     row = cur.fetchall()
     if len(row) > 0:
         email = row[0][0]
@@ -282,7 +281,7 @@ def profile(username: str) -> object:
     first_six = unlocked_achievements[0 : min(6, len(unlocked_achievements))]
 
     # Calculates the user's age based on their date of birth.
-    datetime_object = datetime.strptime(birthday, "%Y-%m-%d")
+    datetime_object = birthday
     age = helper_profile.calculate_age(datetime_object)
 
     # get user level
@@ -373,11 +372,11 @@ def edit_profile() -> object:
         The updated profile page if the details provided were valid.
     """
     degrees = {"degrees": []}
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT birthday, bio, degree, privacy, gender FROM UserProfile "
-            "WHERE username=?",
+            "SELECT birthday, bio, degree, privacy, gender FROM user_profile "
+            "WHERE username=%s;",
             (session["username"],),
         )
         data = cur.fetchone()
@@ -388,19 +387,19 @@ def edit_profile() -> object:
         gender = data[4]
 
         cur.execute(
-            "SELECT hobby FROM UserHobby WHERE username=?", (session["username"],)
+            "SELECT hobby FROM user_hobby WHERE username=%s;", (session["username"],)
         )
         hobbies = cur.fetchall()
 
         cur.execute(
-            "SELECT interest FROM UserInterests WHERE username=?",
+            "SELECT interest FROM user_interests WHERE username=%s;",
             (session["username"],),
         )
         interests = cur.fetchall()
 
         # gets all possible degrees
         cur.execute(
-            "SELECT * FROM Degree",
+            "SELECT * FROM degree",
         )
         degree_list = cur.fetchall()
         for item in degree_list:
@@ -449,7 +448,7 @@ def edit_profile() -> object:
         interests_unformatted = interests_input.split(",")
         interests = [interest.lower() for interest in interests_unformatted]
         # Connects to the database to perform validation.
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
 
             # Validates user profile details and uploaded image.
@@ -472,8 +471,8 @@ def edit_profile() -> object:
                 # Updates the bio, gender, and birthday.
                 if file_name_hashed:
                     cur.execute(
-                        "UPDATE UserProfile SET bio=?, gender=?, birthday=?, "
-                        "profilepicture=?, degree=? WHERE username=?;",
+                        "UPDATE user_profile SET bio=%s, gender=%s, birthday=%s, "
+                        "profilepicture=%s, degree=%s WHERE username=%s;",
                         (
                             bio,
                             gender,
@@ -489,8 +488,8 @@ def edit_profile() -> object:
 
                 else:
                     cur.execute(
-                        "UPDATE UserProfile SET bio=?, gender=?, birthday=?, "
-                        "degree=? WHERE username=?;",
+                        "UPDATE user_profile SET bio=%s, gender=%s, birthday=%s, "
+                        "degree=%s WHERE username=%s;",
                         (
                             bio,
                             gender,
@@ -503,12 +502,14 @@ def edit_profile() -> object:
                 # Inserts new hobbies and interests into the database if the
                 # user made a new input.
 
-                cur.execute("DELETE FROM UserHobby WHERE username=?;", (username,))
-                cur.execute("DELETE FROM UserInterests WHERE username=?;", (username,))
+                cur.execute("DELETE FROM user_hobby WHERE username=%s;", (username,))
+                cur.execute(
+                    "DELETE FROM user_interests WHERE username=%s;", (username,)
+                )
                 if hobbies != [""]:
                     for hobby in hobbies:
                         cur.execute(
-                            "SELECT hobby FROM UserHobby WHERE username=? AND hobby=?;",
+                            "SELECT hobby FROM user_hobby WHERE username=%s AND hobby=%s;",
                             (
                                 username,
                                 hobby,
@@ -516,8 +517,8 @@ def edit_profile() -> object:
                         )
                         if cur.fetchone() is None:
                             cur.execute(
-                                "INSERT INTO UserHobby (username, "
-                                "hobby) VALUES (?, ?);",
+                                "INSERT INTO user_hobby (username, "
+                                "hobby) VALUES (%s, %s);",
                                 (
                                     username,
                                     hobby,
@@ -526,8 +527,8 @@ def edit_profile() -> object:
                 if interests != [""]:
                     for interest in interests:
                         cur.execute(
-                            "SELECT interest FROM UserInterests WHERE "
-                            "username=? AND interest=?;",
+                            "SELECT interest FROM user_interests WHERE "
+                            "username=%s AND interest=%s;",
                             (
                                 username,
                                 interest,
@@ -535,8 +536,8 @@ def edit_profile() -> object:
                         )
                         if cur.fetchone() is None:
                             cur.execute(
-                                "INSERT INTO UserInterests "
-                                "(username, interest) VALUES (?, ?);",
+                                "INSERT INTO user_interests "
+                                "(username, interest) VALUES (%s, %s);",
                                 (
                                     username,
                                     interest,
@@ -571,10 +572,10 @@ def profile_privacy() -> object:
         The web page to edit the user's profile details.
     """
     privacy = request.form.get("privacy")
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "UPDATE UserProfile SET privacy=? WHERE username=?;",
+            "UPDATE user_profile SET privacy=%s WHERE username=%s;",
             (
                 privacy,
                 session["username"],
@@ -599,13 +600,15 @@ def edit_socials() -> object:
         "instagram": request.form.get("instagram"),
         "linkedin": request.form.get("linkedin"),
     }
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("DELETE FROM UserSocial WHERE username=?;", (session["username"],))
+        cur.execute(
+            "DELETE FROM user_social WHERE username=%s;", (session["username"],)
+        )
         for key, value in socials.items():
             if value != "":
                 cur.execute(
-                    "INSERT INTO UserSocial (username, social, link) VALUES (?, ?, ?);",
+                    "INSERT INTO user_social (username, social, link) VALUES (%s, %s, %s);",
                     (session["username"], key, value),
                 )
 

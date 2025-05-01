@@ -2,17 +2,13 @@
 Performs checks and actions to help the achievements system work effectively.
 """
 
-import os
-import sqlite3
+from db import connect_to_db
 from datetime import date
 from typing import Sized, Tuple
 
 import helpers.helper_general as helper_general
 import helpers.helper_profile as helper_profile
 from flask import session
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 def apply_achievement(username: str, achievement_id: int):
@@ -23,28 +19,28 @@ def apply_achievement(username: str, achievement_id: int):
         username: The user who unlocked the achievement.
         achievement_id: The ID of the achievement unlocked.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT * FROM CompleteAchievements "
-            "WHERE (username=? AND achievement_ID=?);",
+            "SELECT * FROM complete_achievements "
+            "WHERE (username=%s AND achievement_id=%s);",
             (username, achievement_id),
         )
         if cur.fetchone() is None:
             cur.execute(
-                "INSERT INTO CompleteAchievements "
-                "(username, achievement_ID, date_completed) VALUES (?, ?, ?);",
+                "INSERT INTO complete_achievements "
+                "(username, achievement_id, date_completed) VALUES (%s, %s, %s);",
                 (username, achievement_id, date.today()),
             )
             conn.commit()
             cur.execute(
-                "SELECT xp_value FROM Achievements WHERE achievement_ID=?;",
+                "SELECT xp_value FROM achievements WHERE achievement_id=%s;",
                 (achievement_id,),
             )
             exp = cur.fetchone()[0]
             helper_general.check_level_exists(username, conn)
             cur.execute(
-                "UPDATE UserLevel SET experience = experience + ? WHERE username=?;",
+                "UPDATE user_level SET experience = experience + %s WHERE username=%s;",
                 (exp, username),
             )
             conn.commit()
@@ -61,15 +57,15 @@ def get_achievements(username: str) -> Tuple[Sized, Sized]:
     Returns:
         A list of unlocked and locked achievements and their details.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         # Gets unlocked achievements, sorted by XP descending.
         cur.execute(
             "SELECT description, icon, rarity, xp_value, achievement_name "
-            "FROM CompleteAchievements "
-            "INNER JOIN Achievements ON CompleteAchievements"
-            ".achievement_ID = Achievements.achievement_ID "
-            "WHERE username=?;",
+            "FROM complete_achievements "
+            "INNER JOIN achievements ON complete_achievements"
+            ".achievement_id = achievements.achievement_id "
+            "WHERE username=%s;",
             (username,),
         )
         unlocked_achievements = cur.fetchall()
@@ -78,7 +74,7 @@ def get_achievements(username: str) -> Tuple[Sized, Sized]:
         # Get locked achievements, sorted by XP ascending.
         cur.execute(
             "SELECT description, icon, rarity, xp_value, achievement_name "
-            "FROM Achievements"
+            "FROM achievements"
         )
         all_achievements = cur.fetchall()
         locked_achievements = list(set(all_achievements) - set(unlocked_achievements))
@@ -98,7 +94,7 @@ def update_close_connection_achievements(cur):
     apply_achievement(session["username"], 12)
 
     # Award achievement ID 13 - Friend Group if necessary
-    cur.execute("SELECT * FROM CloseFriend WHERE user1=?;", (session["username"],))
+    cur.execute("SELECT * FROM close_friend WHERE user1=%s;", (session["username"],))
     if len(cur.fetchall()) >= 10:
         apply_achievement(session["username"], 13)
 
@@ -119,25 +115,27 @@ def update_connection_achievements(cur, username: str):
 
     # Get user interests and hobbies
     cur.execute(
-        "SELECT interest FROM UserInterests WHERE username=?;",
+        "SELECT interest FROM user_interests WHERE username=%s;",
         (session["username"],),
     )
     row = cur.fetchall()
     my_interests = []
     for interest in row:
         my_interests.append(interest[0])
-    cur.execute("SELECT hobby FROM UserHobby WHERE username=?;", (session["username"],))
+    cur.execute(
+        "SELECT hobby FROM user_hobby WHERE username=%s;", (session["username"],)
+    )
     row = cur.fetchall()
     my_hobbies = []
     for hobby in row:
         my_hobbies.append(hobby[0])
     # Get connected user interests and hobbies
-    cur.execute("SELECT interest FROM UserInterests WHERE username=?;", (username,))
+    cur.execute("SELECT interest FROM user_interests WHERE username=%s;", (username,))
     row = cur.fetchall()
     connection_interests = []
     for interest in row:
         connection_interests.append(interest[0])
-    cur.execute("SELECT hobby FROM UserHobby WHERE username=?;", (username,))
+    cur.execute("SELECT hobby FROM user_hobby WHERE username=%s;", (username,))
     row = cur.fetchall()
     connection_hobbies = []
     for hobby in row:
@@ -168,7 +166,7 @@ def update_connection_achievements(cur, username: str):
     valid_user_count = 0
     for user in cons_user:
         cur.execute(
-            "SELECT username from UserProfile WHERE degree!=? AND username=?;",
+            "SELECT username from user_profile WHERE degree!=%s AND username=%s;",
             (degree, user[0]),
         )
         if cur.fetchone():
@@ -178,7 +176,7 @@ def update_connection_achievements(cur, username: str):
     valid_user_count2 = 0
     for user in cons_user2:
         cur.execute(
-            "SELECT username from UserProfile WHERE degree!=? AND username=?;",
+            "SELECT username from user_profile WHERE degree!=%s AND username=%s;",
             (degree_user2, user[0]),
         )
         if cur.fetchone():
@@ -232,7 +230,7 @@ def update_post_achievements(cur, likes: int, username: str):
 
     # Checks how many posts user has liked.
     cur.execute(
-        "SELECT COUNT(postId) FROM UserLikes WHERE username=? ;",
+        "SELECT COUNT(post_id) FROM user_likes WHERE username=%s;",
         (session["username"],),
     )
     row = cur.fetchone()[0]

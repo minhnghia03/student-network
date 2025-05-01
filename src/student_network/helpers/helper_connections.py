@@ -2,15 +2,11 @@
 Performs checks and actions to help user connections work effectively.
 """
 
-import os
-import sqlite3
+from db import connect_to_db
 
 import helpers.helper_general as helper_general
 import helpers.helper_profile as helper_profile
 from flask import session
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 def delete_connection(username: str) -> bool:
@@ -26,35 +22,35 @@ def delete_connection(username: str) -> bool:
     # Checks that the user isn't trying to remove a connection with
     # themselves.
     if username != session["username"]:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+            cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
 
             # Searches for the connection in the database.
             if cur.fetchone() is not None:
                 row = cur.execute(
-                    "SELECT * FROM Connection WHERE (user1=? AND user2=?) OR "
-                    "(user1=? AND user2=?);",
+                    "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
+                    "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
                 # Removes the connection from the database if it exists.
                 if row:
                     cur.execute(
-                        "DELETE FROM Connection WHERE (user1=? AND user2=?) "
-                        "OR (user1=? AND user2=?);",
+                        "DELETE FROM connection WHERE (user1=%s AND user2=%s) "
+                        "OR (user1=%s AND user2=%s);",
                         (username, session["username"], session["username"], username),
                     )
                     row = cur.execute(
-                        "SELECT * FROM Connection "
-                        "WHERE (user1=? AND user2=?) "
-                        "OR (user1=? AND user2=?);",
+                        "SELECT * FROM connection "
+                        "WHERE (user1=%s AND user2=%s) "
+                        "OR (user1=%s AND user2=%s);",
                         (username, session["username"], session["username"], username),
                     )
                     if row:
                         cur.execute(
-                            "DELETE FROM CloseFriend "
-                            "WHERE (user1=? AND user2=?) "
-                            "OR (user1=? AND user2=?);",
+                            "DELETE FROM close_friend "
+                            "WHERE (user1=%s AND user2=%s) "
+                            "OR (user1=%s AND user2=%s);",
                             (
                                 username,
                                 session["username"],
@@ -81,10 +77,10 @@ def get_connection_request_count() -> int:
     if "username" not in session:
         return 0
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT * FROM Connection WHERE user2=? AND connection_type='request';",
+            "SELECT * FROM connection WHERE user2=%s AND connection_type='request';",
             (session["username"],),
         )
         return len(list(cur.fetchall()))
@@ -100,10 +96,10 @@ def get_connection_type(username: str):
     Returns:
         The type of connection with the specified user.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT connection_type FROM Connection WHERE user1=? AND user2=?",
+            "SELECT connection_type FROM connection WHERE user1=%s AND user2=%s;",
             (
                 session["username"],
                 username,
@@ -117,7 +113,7 @@ def get_connection_type(username: str):
             return row[0]
         else:
             cur.execute(
-                "SELECT connection_type FROM Connection WHERE user1=? AND user2=?",
+                "SELECT connection_type FROM connection WHERE user1=%s AND user2=%s;",
                 (
                     username,
                     session["username"],
@@ -167,10 +163,10 @@ def get_pending_connections(cur, username: str) -> list:
         List of pending and requested connections for a user.
     """
     cur.execute(
-        "SELECT user2 FROM Connection "
-        "WHERE user1=? AND connection_type='request' UNION ALL "
-        "SELECT user1 FROM Connection "
-        "WHERE user2=? AND connection_type='request'",
+        "SELECT user2 FROM connection "
+        "WHERE user1=%s AND connection_type='request' UNION ALL "
+        "SELECT user1 FROM connection "
+        "WHERE user2=%s AND connection_type='request';",
         (username, username),
     )
     return cur.fetchall()
@@ -184,7 +180,7 @@ def get_blocked_users(cur, username: str) -> list:
         List of blocked users for a user.
     """
     cur.execute(
-        "SELECT user2 FROM Connection WHERE user1=? AND connection_type='block'",
+        "SELECT user2 FROM connection WHERE user1=%s AND connection_type='block';",
         (username,),
     )
     return cur.fetchall()
@@ -203,11 +199,11 @@ def get_mutual_hobbies(cur, username: str, invalid: list) -> dict:
     Returns:
         A dictionary of lists of other users with each hobby of the main user
     """
-    cur.execute("SELECT hobby FROM UserHobby WHERE username=?;", (username,))
+    cur.execute("SELECT hobby FROM user_hobby WHERE username=%s;", (username,))
     hobbies = [x[0] for x in cur.fetchall()]
     shared_users = {}
     for hobby in hobbies:
-        cur.execute("SELECT username FROM UserHobby WHERE hobby=?;", (hobby,))
+        cur.execute("SELECT username FROM user_hobby WHERE hobby=%s;", (hobby,))
         same_users = [
             x[0] for x in cur.fetchall() if not x[0] == username if x[0] not in invalid
         ]
@@ -229,11 +225,11 @@ def get_mutual_interests(cur, username: str, invalid: list) -> list:
     Returns:
         A dictionary of lists of other users with each interest of the main user
     """
-    cur.execute("SELECT interest FROM UserInterests WHERE username=?;", (username,))
+    cur.execute("SELECT interest FROM user_interests WHERE username=%s;", (username,))
     hobbies = [x[0] for x in cur.fetchall()]
     shared_users = {}
     for hobby in hobbies:
-        cur.execute("SELECT username FROM UserInterests WHERE interest=?;", (hobby,))
+        cur.execute("SELECT username FROM user_interests WHERE interest=%s;", (hobby,))
         same_users = [
             x[0] for x in cur.fetchall() if not x[0] == username if x[0] not in invalid
         ]
@@ -257,7 +253,7 @@ def get_mutual_degree(cur, username: str, invalid: list, degree: str) -> list:
     """
     shared_users = []
     if degree != 1:
-        cur.execute("SELECT username FROM UserProfile WHERE degree=?;", (degree,))
+        cur.execute("SELECT username FROM user_profile WHERE degree=%s;", (degree,))
         shared_users = [
             x[0] for x in cur.fetchall() if x[0] != username and x[0] not in invalid
         ]
@@ -336,7 +332,7 @@ def get_recommended_connections(username: str) -> list:
         List of recommended connections for a user and the number of shared
         connections, as well as users with shared degree or interests.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         invalid = [
             x[0]
@@ -426,10 +422,10 @@ def is_close_friend(username1: str, username2: str) -> bool:
     Returns:
         Whether the user2 is a close friend of user1 (True/False).
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT * FROM CloseFriend WHERE (user1=? AND user2=?);",
+            "SELECT * FROM close_friend WHERE (user1=%s AND user2=%s);",
             (username1, username2),
         )
         if cur.fetchone():

@@ -1,6 +1,6 @@
 import requests
 
-import sqlite3
+from db import connect_to_db
 from flask import redirect
 from datetime import date
 import helpers.helper_general as helper_general
@@ -30,11 +30,11 @@ def oauth_login(code: str, session: dict) -> str:
         print(response.json())
         raise Exception("Failed to get user info")
     user_info = response.json()
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         moodle_id = user_info["id"]
         cur.execute(
-            "SELECT username, type FROM ACCOUNTS WHERE moodle_id=?;", (moodle_id,)
+            "SELECT username, type FROM accounts WHERE moodle_id=%s;", (moodle_id,)
         )
         conn.commit()
         row = cur.fetchone()
@@ -55,11 +55,11 @@ def oauth_login(code: str, session: dict) -> str:
             account = "student"
             email = user_info["email"]
 
-            with sqlite3.connect("db.sqlite3") as conn:
+            with connect_to_db() as conn:
                 cur = conn.cursor()
                 cur.execute(
-                    "INSERT INTO Accounts (username, password, email, type, moodle_id) "
-                    "VALUES (?, ?, ?, ?, ?);",
+                    "INSERT INTO accounts (username, password, email, type, moodle_id) "
+                    "VALUES (%s, %s, %s, %s, %s);",
                     (
                         username,
                         "unhashed",
@@ -70,9 +70,9 @@ def oauth_login(code: str, session: dict) -> str:
                 )
 
                 cur.execute(
-                    "INSERT INTO UserProfile (username, name, bio, gender, "
+                    "INSERT INTO user_profile (username, name, bio, gender, "
                     "birthday, profilepicture) "
-                    "VALUES (?, ?, ?, ?, ?, ?);",
+                    "VALUES (%s, %s, %s, %s, %s, %s);",
                     (
                         username,
                         full_name,

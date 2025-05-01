@@ -1,6 +1,7 @@
 """
 Performs checks and actions to help the login system work effectively.
 """
+
 import re
 from typing import Tuple, List
 
@@ -54,7 +55,7 @@ def validate_registration(
         message.append("Username must only contain letters and numbers!")
         valid = False
     # Checks that the username hasn't already been registered.
-    cur.execute("SELECT * FROM Accounts WHERE username=?;", (username,))
+    cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
     if cur.fetchone() is not None:
         message.append("Username has already been registered!")
         valid = False
@@ -69,7 +70,7 @@ def validate_registration(
         valid = False
 
     # Checks that the email hasn't already been registered.
-    cur.execute("SELECT * FROM Accounts WHERE email=?;", (email,))
+    cur.execute("SELECT * FROM accounts WHERE email=%s;", (email,))
     if cur.fetchone() is not None:
         message.append("Email has already been registered!")
         valid = False

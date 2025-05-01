@@ -4,7 +4,7 @@ Performs checks and actions to help the post system work effectively.
 
 import os
 import re
-import sqlite3
+from db import connect_to_db
 import uuid
 from datetime import datetime
 from typing import Tuple
@@ -32,7 +32,7 @@ def check_if_liked(cur, post_id: int, username: str) -> bool:
         True if post has been liked by user, False if not
     """
     cur.execute(
-        "SELECT username FROM UserLikes WHERE postId=? AND username=?;",
+        "SELECT username FROM user_likes WHERE post_id=%s AND username=%s;",
         (post_id, username),
     )
     if cur.fetchone():
@@ -56,7 +56,7 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
     all_posts = {"AllPosts": []}
     if "username" in session:
         session["prev-page"] = request.url
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
 
             connections = helper_general.get_all_connections(session["username"])
@@ -65,10 +65,10 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
             for user in connections:
                 if user[0] == session["username"]:
                     cur.execute(
-                        "SELECT * FROM POSTS "
-                        "WHERE username=? AND postId <= ? "
+                        "SELECT * FROM posts "
+                        "WHERE username=%s AND post_id <= %s "
                         "AND privacy!='deleted' "
-                        "ORDER BY postId DESC LIMIT ?;",
+                        "ORDER BY post_id DESC LIMIT %s;",
                         (user[0], starting_id, number),
                     )
                 elif (
@@ -76,20 +76,20 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
                     or user[0] == session["username"]
                 ):
                     cur.execute(
-                        "SELECT * FROM POSTS "
-                        "WHERE username=? AND postId <= ? "
+                        "SELECT * FROM posts "
+                        "WHERE username=%s AND post_id <= %s "
                         "AND privacy!='private' "
                         "AND privacy!='deleted' "
-                        "ORDER BY postId DESC LIMIT ?;",
+                        "ORDER BY post_id DESC LIMIT %s;",
                         (user[0], starting_id, number),
                     )
                 else:
                     cur.execute(
-                        "SELECT * FROM POSTS "
-                        "WHERE username=? AND postId <= ? "
+                        "SELECT * FROM posts "
+                        "WHERE username=%s AND post_id <= %s "
                         "AND privacy!='private' AND privacy!='close' "
                         "AND privacy!='deleted' "
-                        "ORDER BY postId DESC LIMIT ?;",
+                        "ORDER BY post_id DESC LIMIT %s;",
                         (user[0], starting_id, number),
                     )
                 row += cur.fetchall()
@@ -105,11 +105,11 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
                 add = ""
                 if len(user_post[1]) > 250:
                     add = "..."
-                time = datetime.strptime(user_post[4], "%Y-%m-%d").strftime("%d-%m-%y")
+                time = user_post[4].strftime("%d-%m-%y")
 
                 # Get account type
                 cur.execute(
-                    "SELECT type FROM ACCOUNTS WHERE username=? ", (user_post[3],)
+                    "SELECT type FROM accounts WHERE username=%s ", (user_post[3],)
                 )
 
                 accounts = cur.fetchone()
@@ -118,7 +118,7 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
                 post_id = user_post[0]
 
                 cur.execute(
-                    "SELECT * FROM Comments WHERE postId=? LIMIT 5;", (post_id,)
+                    "SELECT * FROM comments WHERE post_id=%s LIMIT 5;", (post_id,)
                 )
                 comments = cur.fetchall()
 
@@ -137,18 +137,19 @@ def fetch_posts(number: int, starting_id: int) -> Tuple[dict, str, bool]:
                 )
 
                 cur.execute(
-                    "SELECT COUNT(commentID) FROM Comments WHERE postId=?;",
+                    "SELECT COUNT(comment_id) FROM comments WHERE post_id=%s;",
                     (post_id,),
                 )
                 comment_count = cur.fetchone()[0]
 
-                cur.execute("SELECT likes FROM POSTS WHERE postId=?;", (post_id,))
+                cur.execute("SELECT likes FROM posts WHERE post_id=%s;", (post_id,))
                 like_count = cur.fetchone()[0]
 
                 liked = check_if_liked(cur, post_id, session["username"])
 
                 cur.execute(
-                    "SELECT (contentUrl) FROM PostContent WHERE postId=?", (post_id,)
+                    "SELECT (content_url) FROM post_content WHERE post_id=%s;",
+                    (post_id,),
                 )
                 images = cur.fetchall()
 
@@ -235,7 +236,13 @@ def delete_file(filename):
     if filename == "":
         return
 
-    file_path = os.path.join("./static/images" + "//post_imgs", filename)
+    file_path = os.path.join(
+        BASE_DIR,
+        "static",
+        "images",
+        "post_imgs",
+        filename,
+    )
     os.remove(file_path)
 
 
@@ -249,7 +256,7 @@ def update_submission_achievements(cur):
     # Award achievement ID 7 - Express yourself if necessary
     helper_achievements.apply_achievement(session["username"], 7)
 
-    cur.execute("SELECT * FROM POSTS WHERE username=?;", (session["username"],))
+    cur.execute("SELECT * FROM posts WHERE username=%s;", (session["username"],))
     num_posts = cur.fetchall()
     # Award achievement ID 8 - 5 posts if necessary
     if len(num_posts) >= 5:
@@ -284,10 +291,10 @@ def get_account_type(username):
     Returns the type of an account for username
         username: The username to check the type for
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT type FROM ACCOUNTS WHERE username=?;",
+            "SELECT type FROM accounts WHERE username=%s;",
             (username,),
         )
 

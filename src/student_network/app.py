@@ -5,7 +5,6 @@ on their feed.
 """
 
 import os
-import sqlite3
 from datetime import datetime
 
 import views.achievements as achievements
@@ -20,11 +19,10 @@ import views.staff as staff
 from flask import Flask, request, session
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
+from db import connect_to_db
 
 load_dotenv()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -49,14 +47,14 @@ def receive_username(username):
 
 @socketio.on("private_message", namespace="/private")
 def private_message(payload):
-    with sqlite3.connect(DB_PATH) as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         now = datetime.now()
 
         cur.execute(
-            "INSERT INTO PrivateMessages "
-            "(sender, receiver, message, date) VALUES (?, ?, ?, ?);",
+            "INSERT INTO private_messages "
+            "(sender, receiver, message, date) VALUES (%s, %s, %s, %s);",
             (
                 session["username"],
                 payload["username"],

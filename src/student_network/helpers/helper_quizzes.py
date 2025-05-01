@@ -1,16 +1,13 @@
 """
 Performs checks and actions to help quizzes work effectively.
 """
-import os
-import sqlite3
+
 from datetime import date
 from random import sample, choice
 from typing import Tuple, List
 
 from flask import request, session
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
+from db import connect_to_db
 
 
 def add_quiz(author, date_created, questions, answers, quiz_name):
@@ -24,17 +21,17 @@ def add_quiz(author, date_created, questions, answers, quiz_name):
         answers: Answer options for the quiz.
         quiz_name: Name of the quiz.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         # Inserts the quiz details into the database.
         cur.execute(
-            "INSERT INTO Quiz (quiz_name, date_created, author) VALUES (?, ?, ?);",
+            "INSERT INTO quiz (quiz_name, date_created, author) VALUES (%s, %s, %s);",
             (quiz_name, date_created, author),
         )
         # Gets the quiz ID of the quiz which has just been created.
         cur.execute(
-            "SELECT MAX(quiz_id) FROM Quiz WHERE date_created=? AND author=? AND "
-            "quiz_name=?",
+            "SELECT MAX(quiz_id) FROM quiz WHERE date_created=%s AND author=%s AND "
+            "quiz_name=%s;",
             (
                 date_created,
                 author,
@@ -45,8 +42,8 @@ def add_quiz(author, date_created, questions, answers, quiz_name):
         # Inserts each question into the database.
         for question in range(len(questions)):
             cur.execute(
-                "INSERT INTO Question (quiz_id, question, answer_1, answer_2, "
-                "answer_3, answer_4) VALUES (?, ?, ?, ?, ?, ?);",
+                "INSERT INTO question (quiz_id, question, answer_1, answer_2, "
+                "answer_3, answer_4) VALUES (%s, %s, %s, %s, %s, %s);",
                 (
                     quiz_id,
                     questions[question],
@@ -70,12 +67,12 @@ def get_quiz_details(cur, quiz_id: int) -> Tuple[list, list, str, list, str]:
     Returns:
         Answer options, questions, author, details, and name of the quiz.
     """
-    cur.execute("SELECT * FROM Quiz WHERE quiz_id=?;", (quiz_id,))
+    cur.execute("SELECT * FROM quiz WHERE quiz_id=%s;", (quiz_id,))
     quiz_details = cur.fetchone()
     quiz_name = quiz_details[1]
     quiz_author = quiz_details[3]
     # Gets a list of questions and answers to pass to the web page.
-    cur.execute("SELECT * FROM Question WHERE quiz_id=?;", (quiz_id,))
+    cur.execute("SELECT * FROM question WHERE quiz_id=%s;", (quiz_id,))
     questions_raw = cur.fetchall()
     questions = []
     answers = []
@@ -123,9 +120,9 @@ def save_quiz_details() -> Tuple[date, str, str, list, list]:
 
 
 def generate_answers_from_set(set_id):
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM QuestionSets WHERE set_id=?;", (set_id,))
+        cur.execute("SELECT * FROM question_sets WHERE set_id=%s;", (set_id,))
         set_details = cur.fetchone()
 
         if set_details:
@@ -201,11 +198,11 @@ def make_quiz(
     if valid:
         add_quiz(author, date_created, questions, answers, quiz_name)
         # Redirect the user to the quiz they just created.
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT MAX(quiz_id) FROM Quiz WHERE date_created=? AND author=? AND "
-                "quiz_name=?",
+                "SELECT MAX(quiz_id) FROM quiz WHERE date_created=%s AND author=%s AND "
+                "quiz_name=%s;",
                 (
                     date_created,
                     author,
@@ -226,14 +223,14 @@ def delete_quiz(quiz_id):
     Args:
         quiz_id: ID of the quiz to delete
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT author FROM Quiz WHERE quiz_id=?;", (quiz_id,))
+        cur.execute("SELECT author FROM quiz WHERE quiz_id=%s;", (quiz_id,))
         author = cur.fetchone()[0]
         if author == session["username"]:
-            cur.execute("DELETE FROM Question WHERE quiz_id=?;", (quiz_id,))
+            cur.execute("DELETE FROM question WHERE quiz_id=%s;", (quiz_id,))
             conn.commit()
-            cur.execute("DELETE FROM Quiz WHERE quiz_id=?;", (quiz_id,))
+            cur.execute("DELETE FROM quiz WHERE quiz_id=%s;", (quiz_id,))
             conn.commit()
         else:
             session["error"] = ["You cannot delete another user's quiz"]
@@ -246,7 +243,7 @@ def get_question_count(cur, quiz_id):
     Args:
         quiz_id: ID of the quiz to count
     """
-    cur.execute("SELECT question FROM Question WHERE quiz_id=?;", (quiz_id,))
+    cur.execute("SELECT question FROM question WHERE quiz_id=%s;", (quiz_id,))
     set_details = cur.fetchall()
 
     if set_details[0] is None:
@@ -265,11 +262,11 @@ def get_user_quizzes(username: str) -> list:
     Returns:
         list of quizzes belonging to the user
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
             "SELECT quiz_id, date_created, author, quiz_name, plays "
-            "FROM Quiz WHERE author=?;",
+            "FROM quiz WHERE author=%s;",
             (username,),
         )
         row = cur.fetchall()

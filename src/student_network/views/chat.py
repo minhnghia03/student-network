@@ -2,20 +2,14 @@
 Handles the view for the chat system and related functionality.
 """
 
-import os
-
 import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
-import helpers.helper_profile as helper_profile
 from flask import Blueprint, render_template
 from flask import session
 
 chat_blueprint = Blueprint(
     "chat", __name__, static_folder="static", template_folder="templates"
 )
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 @chat_blueprint.route("/chat")

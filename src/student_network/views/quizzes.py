@@ -2,12 +2,11 @@
 Handles the view for quizzes and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 
 import helpers.helper_achievements as helper_achievements
 import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
-import helpers.helper_login as helper_login
 import helpers.helper_quizzes as helper_quizzes
 from flask import Blueprint, redirect, render_template, request, session
 
@@ -77,7 +76,7 @@ def quiz(quiz_id: int) -> object:
     """
 
     # Gets the quiz details from the database.
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         (
             answers,
@@ -118,7 +117,7 @@ def quiz(quiz_id: int) -> object:
                 conn.commit()
             # Provides feedback to the user on how they performed on each question.
             question_feedback = []
-            cur.execute("SELECT * FROM Question WHERE quiz_id=?;", (quiz_id,))
+            cur.execute("SELECT * FROM question WHERE quiz_id=%s;", (quiz_id,))
             questions_raw = cur.fetchall()
             for i in range(len(questions_raw)):
                 correct_answer = questions_raw[i][3]
@@ -131,7 +130,7 @@ def quiz(quiz_id: int) -> object:
             helper_achievements.update_quiz_achievements(score)
             # Updates the number of times a quiz has been played.
             cur.execute(
-                "UPDATE Quiz SET plays = plays + 1 WHERE quiz_id=?;", (quiz_id,)
+                "UPDATE quiz SET plays = plays + 1 WHERE quiz_id=%s;", (quiz_id,)
             )
             conn.commit()
 
@@ -155,9 +154,9 @@ def quizzes() -> object:
     Returns:
         The web page of quizzes created.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT quiz_id, date_created, author, quiz_name, plays FROM Quiz")
+        cur.execute("SELECT quiz_id, date_created, author, quiz_name, plays FROM quiz")
         row = cur.fetchall()
         quiz_posts = sorted(row, key=lambda x: x[4], reverse=True)
         quiz_posts = [list(x) for x in quiz_posts]

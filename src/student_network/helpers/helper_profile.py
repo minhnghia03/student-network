@@ -2,8 +2,6 @@
 Performs checks and actions to help the profile system work effectively.
 """
 
-import os
-import sqlite3
 import uuid
 from datetime import date, datetime
 from typing import List, Tuple
@@ -11,9 +9,9 @@ from typing import List, Tuple
 import helpers.helper_general as helper_general
 from PIL import Image
 from werkzeug.utils import secure_filename
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
+from db import connect_to_db
+import os
+from constants import BASE_DIR
 
 
 def calculate_age(born: datetime) -> int:
@@ -41,12 +39,14 @@ def get_degree(username: str) -> Tuple[int, str]:
         The degree of the user.
         The degreeID of the user.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT degree FROM UserProfile WHERE username=?;", (username,))
+        cur.execute("SELECT degree FROM user_profile WHERE username=%s;", (username,))
         degree_id = cur.fetchone()
         if degree_id:
-            cur.execute("SELECT degree FROM Degree WHERE degreeId=?;", (degree_id[0],))
+            cur.execute(
+                "SELECT degree FROM degree WHERE degree_id=%s;", (degree_id[0],)
+            )
             degree = cur.fetchone()
             return degree_id[0], degree[0]
 
@@ -85,10 +85,10 @@ def get_profile_picture(username: str) -> str:
     Returns:
         The profile picture of the user.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT profilepicture FROM UserProfile WHERE username=?;", (username,)
+            "SELECT profilepicture FROM user_profile WHERE username=%s;", (username,)
         )
         row = cur.fetchone()
         if row:
@@ -103,12 +103,12 @@ def read_socials(username: str):
     Returns:
         The social media accounts of that user.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         socials = {}
         # Gets the user's socials
         cur.execute(
-            "SELECT social, link from UserSocial WHERE username=?;", (username,)
+            "SELECT social, link from user_social WHERE username=%s;", (username,)
         )
         row = cur.fetchall()
         if len(row) > 0:
@@ -149,9 +149,7 @@ def validate_edit_profile(
         message.append("Gender must be male, female, or other!")
 
     # Only performs check if a new date of birth was entered.
-    if dob != "":
-        # Converts date string to datetime.
-        dob = datetime.strptime(dob, "%Y-%m-%d")
+    if dob:
         # Checks that date of birth is a past date.
         if datetime.today() < dob:
             valid = False
@@ -191,7 +189,13 @@ def validate_profile_pic(file) -> Tuple[bool, List[str], str]:
     if helper_general.is_allowed_photo_file(file.filename):
         secure_filename(file.filename)
         file_name_hashed = str(uuid.uuid4())
-        file_path = os.path.join("./static/images" + "//avatars", file_name_hashed)
+        file_path = os.path.join(
+            BASE_DIR,
+            "static",
+            "images",
+            "avatars",
+            file_name_hashed,
+        )
         img = Image.open(file)
         img = img.resize((400, 400))
         img = img.convert("RGB")

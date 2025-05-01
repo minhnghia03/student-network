@@ -3,13 +3,12 @@ Handles the view for posts on the feed and related functionality.
 """
 
 import re
-import sqlite3
+from db import connect_to_db
 from datetime import datetime
 
 import helpers.helper_achievements as helper_achievements
 import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
-import helpers.helper_login as helper_login
 import helpers.helper_posts as helper_posts
 import helpers.helper_profile as helper_profile
 from flask import Blueprint, jsonify, redirect, render_template, request, session
@@ -33,9 +32,9 @@ def post(post_id: int) -> object:
     session["prev-page"] = request.url
     content = None
     # check post restrictions
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT privacy, username FROM POSTS WHERE postId=?;", (post_id,))
+        cur.execute("SELECT privacy, username FROM posts WHERE post_id=%s;", (post_id,))
         row = cur.fetchone()
         if row is None:
             return render_template(
@@ -94,7 +93,7 @@ def post(post_id: int) -> object:
 
         # Gets user from database using username.
         cur.execute(
-            "SELECT body, username, date, likes FROM POSTS WHERE postId=?;",
+            "SELECT body, username, date, likes FROM posts WHERE post_id=%s;",
             (post_id,),
         )
         row = cur.fetchall()
@@ -122,17 +121,17 @@ def post(post_id: int) -> object:
             liked = helper_posts.check_if_liked(cur, post_id, session["username"])
 
             cur.execute(
-                "SELECT username FROM ACCOUNTS WHERE username=?;",
+                "SELECT username FROM accounts WHERE username=%s;",
                 (session["username"],),
             )
             user_account_type = cur.fetchone()[0]
 
             cur.execute(
-                "SELECT contentUrl from PostContent WHERE postId=?;", (post_id,)
+                "SELECT content_url from post_content WHERE post_id=%s;", (post_id,)
             )
             images = cur.fetchall()
 
-            cur.execute("SELECT * FROM Comments WHERE postId=?;", (post_id,))
+            cur.execute("SELECT * FROM comments WHERE post_id=%s;", (post_id,))
             row = cur.fetchall()
             if len(row) == 0:
                 session["prev-page"] = request.url
@@ -156,7 +155,7 @@ def post(post_id: int) -> object:
                     notifications=helper_general.get_notifications(),
                 )
             for comment in row:
-                time = datetime.strptime(comment[3], "%Y-%m-%d %H:%M:%S")
+                time = comment[3]
                 comments["comments"].append(
                     {
                         "commentId": comment[0],
@@ -213,12 +212,12 @@ def feed() -> object:
         Redirection to their feed if they're logged in.
     """
     session["prev-page"] = request.url
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
         connections = helper_general.get_all_connections(session["username"])
         connections.append((session["username"],))
-        cur.execute("SELECT MAX(postId) FROM POSTS")
+        cur.execute("SELECT MAX(post_id) FROM posts")
         row = cur.fetchone()
 
     _, content, valid = helper_posts.fetch_posts(2, row[0])
@@ -260,7 +259,7 @@ def search_query() -> dict:
         JSON dictionary of search results of users, and their hobbies
         and interests.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         chars = request.args.get("chars")
         hobby = request.args.get("hobby")
@@ -271,14 +270,14 @@ def search_query() -> dict:
 
         # Filters by username, common hobbies, and interests.
         cur.execute(
-            "SELECT UserProfile.username, UserHobby.hobby, "
-            "UserInterests.interest FROM UserProfile "
-            "LEFT JOIN UserHobby ON UserHobby.username=UserProfile.username "
-            "LEFT JOIN UserInterests ON "
-            "UserInterests.username=UserProfile.username "
-            "WHERE (UserProfile.username LIKE ?) "
-            "AND (IFNULL(hobby, '') LIKE ?) AND (IFNULL(interest, '') LIKE ?) "
-            "GROUP BY UserProfile.username LIMIT 10;",
+            "SELECT user_profile.username, user_hobby.hobby, "
+            "user_interests.interest FROM user_profile "
+            "LEFT JOIN user_hobby ON user_hobby.username=user_profile.username "
+            "LEFT JOIN user_interests ON "
+            "user_interests.username=user_profile.username "
+            "WHERE (user_profile.username LIKE %s) "
+            "AND (IFNULL(hobby, '') LIKE %s) AND (IFNULL(interest, '') LIKE %s) "
+            "GROUP BY user_profile.username LIMIT 10;",
             (
                 name_pattern,
                 hobby_pattern,
@@ -321,19 +320,19 @@ def submit_post() -> object:
 
     # Only adds the post if a title has been input.
     if len(all_file_names) > 0 or len(post_body) > 0:
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
             # Get account type
             cur.execute(
-                "SELECT type FROM ACCOUNTS WHERE username=?;",
+                "SELECT type FROM accounts WHERE username=%s;",
                 (session["username"],),
             )
-            cur.execute("SELECT COUNT(*) FROM POSTS")
+            cur.execute("SELECT COUNT(*) FROM posts")
             row_count = int(cur.fetchone()[0])
             row_id = row_count + 1
             cur.execute(
-                "INSERT INTO POSTS (postId, body, username,"
-                "privacy) VALUES (?, ?, ?, ?);",
+                "INSERT INTO posts (post_id, body, username,"
+                "privacy) VALUES (%s, %s, %s, %s);",
                 (
                     row_id,
                     post_body,
@@ -345,7 +344,7 @@ def submit_post() -> object:
             if len(all_file_names) > 0:
                 for fileName in all_file_names_split:
                     cur.execute(
-                        "INSERT INTO PostContent (postId, contentUrl) VALUES (?, ?);",
+                        "INSERT INTO post_content (post_id, content_url) VALUES (%s, %s);",
                         (
                             row_id,
                             fileName,
@@ -378,23 +377,25 @@ def like_post() -> object:
     """
     post_id = request.form["postId"]
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         liked = helper_posts.check_if_liked(cur, post_id, session["username"])
         if not liked:
             cur.execute(
-                "INSERT INTO UserLikes (postId,username) VALUES (?, ?);",
+                "INSERT INTO user_likes (post_id,username) VALUES (%s, %s);",
                 (post_id, session["username"]),
             )
 
             # Gets number of current likes.
-            cur.execute("SELECT likes, username FROM POSTS WHERE postId=?;", (post_id,))
+            cur.execute(
+                "SELECT likes, username FROM posts WHERE post_id=%s;", (post_id,)
+            )
             row = cur.fetchone()
             likes = row[0] + 1
             username = row[1]
 
             cur.execute(
-                "UPDATE POSTS SET likes=? WHERE postId=? ;",
+                "UPDATE posts SET likes=%s WHERE post_id=%s ;",
                 (
                     likes,
                     post_id,
@@ -402,7 +403,9 @@ def like_post() -> object:
             )
             conn.commit()
 
-            cur.execute("SELECT username FROM AllUserLikes WHERE postId=?;", (post_id,))
+            cur.execute(
+                "SELECT username FROM all_user_likes WHERE post_id=%s;", (post_id,)
+            )
             row = cur.fetchall()
             names = [x[0] for x in row]
             if session["username"] not in names:
@@ -410,7 +413,7 @@ def like_post() -> object:
                 helper_general.check_level_exists(username, conn)
                 helper_general.one_exp(cur, username)
                 cur.execute(
-                    "INSERT INTO AllUserLikes (postId,username) VALUES (?, ?);",
+                    "INSERT INTO all_user_likes (post_id,username) VALUES (%s, %s);",
                     (post_id, session["username"]),
                 )
                 conn.commit()
@@ -418,12 +421,12 @@ def like_post() -> object:
             helper_achievements.update_post_achievements(cur, likes, username)
         else:
             # Gets number of current likes.
-            cur.execute("SELECT likes FROM POSTS WHERE postId=?;", (post_id,))
+            cur.execute("SELECT likes FROM posts WHERE post_id=%s;", (post_id,))
             row = cur.fetchone()
             likes = row[0] - 1
 
             cur.execute(
-                "UPDATE POSTS SET likes=? WHERE postId=? ;",
+                "UPDATE posts SET likes=%s WHERE post_id=%s ;",
                 (
                     likes,
                     post_id,
@@ -432,7 +435,7 @@ def like_post() -> object:
             conn.commit()
 
             cur.execute(
-                "DELETE FROM UserLikes WHERE (postId=? AND username=?)",
+                "DELETE FROM user_likes WHERE (post_id=%s AND username=%s)",
                 (post_id, session["username"]),
             )
             conn.commit()
@@ -453,21 +456,21 @@ def submit_comment() -> object:
 
     # Only submits the comment if it is not empty.
     if comment_body.replace(" ", "") != "":
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO Comments (postId, body, username) VALUES (?, ?, ?);",
+                "INSERT INTO comments (post_id, body, username) VALUES (%s, %s, %s);",
                 (post_id, comment_body, session["username"]),
             )
             conn.commit()
 
             # Get username on post
-            cur.execute("SELECT username FROM POSTS WHERE postId=?;", (post_id,))
+            cur.execute("SELECT username FROM posts WHERE post_id=%s;", (post_id,))
             username = cur.fetchone()[0]
 
             # Get number of comments
             cur.execute(
-                "SELECT COUNT(commentId) FROM Comments WHERE postID=?;", (post_id,)
+                "SELECT COUNT(comment_id) FROM comments WHERE post_id=%s;", (post_id,)
             )
             row = cur.fetchone()[0]
 
@@ -496,16 +499,16 @@ def delete_post() -> object:
     post_id = request.form["postId"]
     message = []
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT postId FROM POSTS WHERE postId=?;", (post_id,))
+        cur.execute("SELECT post_id FROM posts WHERE post_id=%s;", (post_id,))
         row = cur.fetchone()
         # check the post exists in database
         if row[0] is None:
             message.append("Error: this post does not exist")
         else:
             cur.execute(
-                "UPDATE POSTS SET privacy=? WHERE postId=?;", ("deleted", post_id)
+                "UPDATE posts SET privacy=%s WHERE post_id=%s;", ("deleted", post_id)
             )
             conn.commit()
 
@@ -532,9 +535,9 @@ def delete_comment() -> object:
     post_id = request.form["postId"]
     comment_id = request.form["commentId"]
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM Comments WHERE commentId=? ", (comment_id,))
+        cur.execute("SELECT * FROM comments WHERE comment_id=%s ", (comment_id,))
         row = cur.fetchone()
         # Checks that the comment exists.
         if row[0] is None:
@@ -548,7 +551,7 @@ def delete_comment() -> object:
                 notifications=helper_general.get_notifications(),
             )
         else:
-            cur.execute("DELETE FROM Comments WHERE commentId =? ", (comment_id,))
+            cur.execute("DELETE FROM comments WHERE comment_id =%s ", (comment_id,))
             conn.commit()
 
     return redirect("post_page/" + post_id)
@@ -593,10 +596,10 @@ def delete_file():
 def user_exists():
     username = request.args.get("username")
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
-        cur.execute("SELECT username FROM ACCOUNTS WHERE username=?;", (username,))
+        cur.execute("SELECT username FROM accounts WHERE username=%s;", (username,))
 
         row = cur.fetchone()
 

@@ -37,7 +37,6 @@ services:
       POSTGRES_PASSWORD: admin
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres_init.sql:/docker-entrypoint-initdb.d/postgres_init.sql
     networks:
       - hsa_network
 

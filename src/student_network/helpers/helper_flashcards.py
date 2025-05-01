@@ -1,15 +1,12 @@
 """
 Performs checks and actions to help flashcard sets work effectively.
 """
-import os
-import sqlite3
+
+from db import connect_to_db
 from datetime import date
 from typing import Tuple
 
 from flask import request, session
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 def get_set_details(cur, set_id: int) -> Tuple[str, date, str, dict, int]:
@@ -22,7 +19,7 @@ def get_set_details(cur, set_id: int) -> Tuple[str, date, str, dict, int]:
     Returns:
         Questions with answers, author, and name of the set.
     """
-    cur.execute("SELECT * FROM QuestionSets WHERE set_id=?;", (set_id,))
+    cur.execute("SELECT * FROM question_sets WHERE set_id=%s;", (set_id,))
     set_details = cur.fetchone()
 
     if set_details[4]:
@@ -53,12 +50,12 @@ def delete_set(set_id):
     Args:
         set_id: ID of the set to delete
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT author FROM QuestionSets WHERE set_id=?;", (set_id,))
+        cur.execute("SELECT author FROM question_sets WHERE set_id=%s;", (set_id,))
         author = cur.fetchone()[0]
         if author == session["username"]:
-            cur.execute("DELETE FROM QuestionSets WHERE set_id=?;", (set_id,))
+            cur.execute("DELETE FROM question_sets WHERE set_id=%s;", (set_id,))
             conn.commit()
         else:
             session["error"] = ["You cannot delete another user's flashcard set"]
@@ -72,13 +69,14 @@ def delete_question(set_id, index):
         set_id: ID of the set to delete from
         index: the index of the question to delete
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT author FROM QuestionSets WHERE set_id=?;", (set_id,))
+        cur.execute("SELECT author FROM question_sets WHERE set_id=%s;", (set_id,))
         author = cur.fetchone()[0]
         if author == session["username"]:
             cur.execute(
-                "SELECT questions, answers FROM QuestionSets WHERE set_id=?;", (set_id,)
+                "SELECT questions, answers FROM question_sets WHERE set_id=%s;",
+                (set_id,),
             )
             set_details = cur.fetchone()
             if not all(set_details[0]):
@@ -97,7 +95,7 @@ def delete_question(set_id, index):
                 session["error"] = ["Question does not exist"]
 
             cur.execute(
-                "UPDATE QuestionSets SET questions=?, answers=? WHERE set_id=?;",
+                "UPDATE question_sets SET questions=%s, answers=%s WHERE set_id=%s;",
                 (questions, answers, set_id),
             )
             conn.commit()
@@ -114,7 +112,7 @@ def save_set(set_id):
         set_id: ID of the set to save
     """
     # Gets set details.
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         count = get_question_count(cur, set_id)
 
@@ -145,7 +143,7 @@ def save_set(set_id):
         name = "Unnamed"
 
     cur.execute(
-        "UPDATE QuestionSets SET set_name=?, questions=?, answers=? WHERE set_id=?;",
+        "UPDATE question_sets SET set_name=%s, questions=%s, answers=%s WHERE set_id=%s;",
         (name, questions, answers, set_id),
     )
     conn.commit()
@@ -158,13 +156,13 @@ def generate_set() -> int:
     Returns:
         set_id of new set
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO QuestionSets (date_created,author) VALUES (?, ?);",
+            "INSERT INTO question_sets (date_created,author) VALUES (%s, %s);",
             (date.today(), session["username"]),
         )
-        cur.execute("SELECT MAX(set_id) FROM QuestionSets;")
+        cur.execute("SELECT MAX(set_id) FROM question_sets;")
         new_id = cur.fetchone()[0]
 
     return new_id
@@ -177,10 +175,10 @@ def add_card(set_id):
     Args:
         set_id: ID of the set to add to
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT questions, answers, author FROM QuestionSets WHERE set_id=?;",
+            "SELECT questions, answers, author FROM question_sets WHERE set_id=%s;",
             (set_id,),
         )
         row = cur.fetchone()
@@ -212,7 +210,7 @@ def add_card(set_id):
                 answers = "answer1"
 
             cur.execute(
-                "UPDATE QuestionSets SET questions=?, answers=? WHERE set_id=?;",
+                "UPDATE question_sets SET questions=%s, answers=%s WHERE set_id=%s;",
                 (questions, answers, set_id),
             )
             conn.commit()
@@ -230,7 +228,7 @@ def add_play(cur, set_id):
     """
     # Updates the number of times a quiz has been played.
     cur.execute(
-        "UPDATE QuestionSets SET cards_played = cards_played + 1 WHERE set_id=?;",
+        "UPDATE question_sets SET cards_played = cards_played + 1 WHERE set_id=%s;",
         (set_id,),
     )
 
@@ -242,7 +240,7 @@ def get_question_count(cur, set_id) -> int:
     Args:
         set_id: ID of the set to count
     """
-    cur.execute("SELECT questions FROM QuestionSets WHERE set_id=?;", (set_id,))
+    cur.execute("SELECT questions FROM question_sets WHERE set_id=%s;", (set_id,))
     set_details = cur.fetchone()
     if set_details[0] is None:
         return 0
@@ -275,11 +273,11 @@ def get_user_cards(username: str) -> list:
     Returns:
         list of sets belonging to the user
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
             "SELECT set_id, date_created, author, set_name, cards_played "
-            "FROM QuestionSets WHERE author=?;",
+            "FROM question_sets WHERE author=%s;",
             (username,),
         )
         row = cur.fetchall()

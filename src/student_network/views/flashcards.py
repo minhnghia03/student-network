@@ -2,13 +2,12 @@
 Handles the view for flashcards and related functionality.
 """
 
-import sqlite3
-
 import helpers.helper_achievements as helper_achievements
 import helpers.helper_connections as helper_connections
 import helpers.helper_general as helper_general
 import helpers.helper_flashcards as helper_flashcards
-from flask import Blueprint, json, redirect, render_template, request, session, jsonify
+from flask import Blueprint, redirect, render_template, request, session
+from db import connect_to_db
 
 
 flashcards_blueprint = Blueprint(
@@ -24,10 +23,10 @@ def flashcards() -> object:
     Returns:
         The web page of flashcards.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT set_id, date_created, author, set_name, cards_played FROM QuestionSets"
+            "SELECT set_id, date_created, author, set_name, cards_played FROM question_sets"
         )
         row = cur.fetchall()
         set_posts = list(sorted(row, key=lambda x: x[4], reverse=True))
@@ -109,10 +108,10 @@ def flashcards_edit(set_id: int) -> object:
         The web page of flashcards created.
     """
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
 
-        cur.execute("SELECT author FROM QuestionSets WHERE set_id=?;", (set_id,))
+        cur.execute("SELECT author FROM question_sets WHERE set_id=%s;", (set_id,))
         author = cur.fetchone()[0]
         if author != session["username"]:
             return redirect("/flashcards/set/" + str(set_id))
@@ -159,7 +158,7 @@ def flashcard_set(set_id: int) -> object:
         The web page for answering the questions, or feedback for your answers.
     """
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         card_set = helper_flashcards.get_set_details(cur, set_id)
 
@@ -292,7 +291,7 @@ def flashcards_start_set(set_id: int) -> object:
     Returns:
         The web page for playing the flashcard set
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         helper_flashcards.add_play(cur, set_id)
         conn.commit()
@@ -312,7 +311,7 @@ def flashcards_play(set_id: int) -> object:
         The web page for playing the flashcard set
     """
     # Gets the flashcards details from the database.
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         (
             set_name,

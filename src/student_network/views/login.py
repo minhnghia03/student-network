@@ -2,7 +2,7 @@
 Handles the view for the login system and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 from datetime import date
 from string import capwords
 
@@ -105,11 +105,11 @@ def login_submit() -> object:
     username = request.form["username_input"].lower()
     password = request.form["psw_input"].encode("utf-8")
 
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         # Gets user from database using username.
         cur.execute(
-            "SELECT password, type FROM ACCOUNTS WHERE username=? and moodle_id is NULL;",
+            "SELECT password, type FROM accounts WHERE username=%s and moodle_id is NULL;",
             (username,),
         )
         conn.commit()
@@ -121,7 +121,7 @@ def login_submit() -> object:
             session["error"] = ["login"]
             return redirect("/login")
         if hashed_password:
-            if bcrypt.checkpw(password, hashed_password):
+            if bcrypt.checkpw(password, hashed_password.encode("utf-8")):
                 session["username"] = username
                 session["prev-page"] = request.url
                 if account_type == "admin":
@@ -190,7 +190,7 @@ def register_submit() -> object:
     account = request.form.get("optradio")
 
     # Connects to the database to perform validation.
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         valid, message = helper_login.validate_registration(
             cur, username, full_name, password, password_confirm, email, terms
@@ -199,8 +199,8 @@ def register_submit() -> object:
         if valid is True:
             hash_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
             cur.execute(
-                "INSERT INTO Accounts (username, password, email, type) "
-                "VALUES (?, ?, ?, ?);",
+                "INSERT INTO accounts (username, password, email, type) "
+                "VALUES (%s, %s, %s, %s);",
                 (
                     username,
                     hash_password,
@@ -209,9 +209,9 @@ def register_submit() -> object:
                 ),
             )
             cur.execute(
-                "INSERT INTO UserProfile (username, name, bio, gender, "
+                "INSERT INTO user_profile (username, name, bio, gender, "
                 "birthday, profilepicture) "
-                "VALUES (?, ?, ?, ?, ?, ?);",
+                "VALUES (%s, %s, %s, %s, %s, %s);",
                 (
                     username,
                     full_name,

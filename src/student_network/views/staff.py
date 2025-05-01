@@ -2,7 +2,7 @@
 Handles the view for staff administration tools and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 
 import helpers.helper_connections as helper_connections
 from flask import Blueprint, redirect, render_template, session
@@ -27,12 +27,12 @@ def show_staff_requests() -> object:
                 message=["You are not logged in to an admin account"],
                 requestCount=helper_connections.get_connection_request_count(),
             )
-        with sqlite3.connect("db.sqlite3") as conn:
+        with connect_to_db() as conn:
             # Loads the list of connection requests and their avatars.
             requests = []
             cur = conn.cursor()
             # Extracts incoming requests.
-            cur.execute("SELECT username FROM ACCOUNTS WHERE type='pending_staff';")
+            cur.execute("SELECT username FROM accounts WHERE type='pending_staff';")
             conn.commit()
             row = cur.fetchall()
             if len(row) > 0:
@@ -63,10 +63,10 @@ def accept_staff(username: str):
     Returns:
         Redirection to the administration page.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "UPDATE ACCOUNTS SET type=? WHERE username=? ;", ("staff", username)
+            "UPDATE accounts SET type=%s WHERE username=%s ;", ("staff", username)
         )
     return redirect("/admin")
 
@@ -82,9 +82,9 @@ def reject_staff(username: str):
     Returns:
         Redirection to the administration page.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "UPDATE ACCOUNTS SET type=? WHERE username=? ;", ("student", username)
+            "UPDATE accounts SET type=%s WHERE username=%s ;", ("student", username)
         )
     return redirect("/admin")

@@ -2,7 +2,7 @@
 Handles the view for achievements and related functionality.
 """
 
-import sqlite3
+from db import connect_to_db
 
 import helpers.helper_achievements as helper_achievements
 import helpers.helper_connections as helper_connections
@@ -65,9 +65,9 @@ def leaderboard() -> object:
     Returns:
         The web page for viewing rankings.
     """
-    with sqlite3.connect("db.sqlite3") as conn:
+    with connect_to_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM UserLevel ORDER BY experience DESC")
+        cur.execute("SELECT * FROM user_level ORDER BY experience DESC")
         top_users = cur.fetchall()
         if top_users:
             total_user_count = len(top_users)
