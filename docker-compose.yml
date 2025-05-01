@@ -14,7 +14,7 @@ services:
       - MOODLE_EMAIL=admin@example.com
       - MOODLE_SITE_NAME="HSA Connect"
       - MOODLE_DATABASE_TYPE=pgsql
-      - MOODLE_DATABASE_HOST=postgres
+      - MOODLE_DATABASE_HOST=db
       - MOODLE_DATABASE_PORT_NUMBER=5432
       - MOODLE_DATABASE_USER=admin
       - MOODLE_DATABASE_PASSWORD=admin
@@ -25,8 +25,8 @@ services:
     networks:
       - hsa_network
 
-  postgres:
-    container_name: postgres
+  db:
+    container_name: postgres_container
     image: postgres:16
     restart: unless-stopped
     ports:
