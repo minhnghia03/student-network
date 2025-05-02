@@ -1,137 +1,388 @@
-<meta property="og:title" content="Reconnect | Flashcards" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Flashcards edit set{% endblock %} {%
-block content %}
-<!-- when writing the for loop, use the whole ui segment instead of just "sixteen wide column" -->
+  <meta property="og:title" content="HSA Connect | Thẻ ghi nhớ" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
 
-{% if errors %} {% if "save" in errors %}
-<div class="ui message green">
-  <div class="header">Success</div>
-  <p>Deck saved successfully</p>
-</div>
-{% else %}
-<div class="ui segment">
-  <div class="ui message red">
-    <div class="header">Error:</div>
-    {% for item in errors %}
-    <p>{{ item }}</p>
-    {% endfor %}
+{% extends "base.html" %}
+{% block title %}Chỉnh sửa bộ thẻ ghi nhớ{% endblock %}
+{% block content %}
+
+<style>
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --green: #28a745;
+    --green-light: rgba(40, 167, 69, 0.1);
+    --red: #dc3545;
+    --red-light: rgba(220, 53, 69, 0.1);
+    --blue: #17a2b8;
+    --blue-light: rgba(23, 162, 184, 0.1);
+    --yellow: #ffc107;
+    --yellow-light: rgba(255, 193, 7, 0.1);
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --bg-light: #f8f9fa;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --button-radius: 8px;
+  }
+
+  /* Main container */
+  .flashcards-container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* Header */
+  .flashcards-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .flashcards-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .flashcards-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* Notification messages */
+  .notification {
+    padding: 15px 20px;
+    border-radius: var(--card-radius);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .notification-success {
+    background-color: var(--green-light);
+    color: var(--green);
+  }
+
+  .notification-error {
+    background-color: var(--red-light);
+    color: var(--red);
+  }
+
+  .notification-icon {
+    font-size: 1.5rem;
+  }
+
+  .notification-content {
+    flex: 1;
+  }
+
+  .notification-title {
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .notification-message {
+    font-size: 0.95rem;
+  }
+
+  /* Form sections */
+  .form-section {
+    background-color: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+    padding: 25px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--button-radius);
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  .form-input::placeholder {
+    color: var(--text-light);
+  }
+
+  /* Flashcard item */
+  .flashcard-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .flashcard-input-group {
+    position: relative;
+  }
+  
+  .flashcard-input-label {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    background-color: white;
+    padding: 0 5px;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+  }
+  
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  .empty-state-text {
+    color: var(--text-medium);
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .actions-left {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .actions-right {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--button-radius);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 5px 15px rgba(110, 142, 251, 0.3);
+  }
+  
+  .btn-secondary {
+    background-color: #f0f0f0;
+    color: var(--text-medium);
+  }
+
+  .btn-secondary:hover {
+    background-color: #e5e5e5;
+    color: var(--text-dark);
+  }
+  
+  .btn-danger {
+    background-color: var(--red);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+  
+  .btn-sm {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .flashcard-item {
+      grid-template-columns: 1fr 1fr auto;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .flashcard-item {
+      grid-template-columns: 1fr;
+    }
+    
+    .actions {
+      flex-direction: column-reverse;
+    }
+    
+    .actions-left, .actions-right {
+      flex-direction: column;
+      width: 100%;
+    }
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="flashcards-container">
+  <div class="flashcards-header">
+    <h1 class="flashcards-title">Chỉnh sửa bộ thẻ ghi nhớ</h1>
+    <p class="flashcards-subtitle">Tạo và chỉnh sửa nội dung thẻ ghi nhớ để học tập hiệu quả</p>
   </div>
-</div>
-{% endif %} {% endif %}
 
-<form
-  action="{{ url_for('flashcards.flashcards_save', set_id=set_id) }}"
-  id="questions"
-  method="POST"
-></form>
-<div class="ui segment">
-  <div class="ui form">
-    <div class="field">
-      <label>Name</label>
-      <input
-        placeholder="Flashcard set name"
-        type="text"
-        name="set_name"
-        value="{{set_name}}"
-        form="questions"
-      />
+  <!-- Notification Messages -->
+  {% if errors %}
+    {% if "save" in errors %}
+      <div class="notification notification-success">
+        <i class="check circle icon notification-icon"></i>
+        <div class="notification-content">
+          <div class="notification-title">Thành công</div>
+          <div class="notification-message">Bộ thẻ đã được lưu thành công</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="notification notification-error">
+        <i class="exclamation triangle icon notification-icon"></i>
+        <div class="notification-content">
+          <div class="notification-title">Lỗi</div>
+          <div class="notification-message">
+            {% for item in errors %}
+              {{ item }}<br>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <form action="{{ url_for('flashcards.flashcards_save', set_id=set_id) }}" id="questions" method="POST">
+    <!-- Set Name -->
+    <div class="form-section">
+      <label class="form-label">Tên bộ thẻ ghi nhớ</label>
+      <input class="form-input" placeholder="Nhập tên bộ thẻ ghi nhớ" type="text" name="set_name" value="{{set_name}}" />
+    </div>
+
+    <!-- Flashcards -->
+    {% if questions %}
+      {% for question in questions.keys() %}
+        <div class="form-section">
+          <div class="flashcard-item">
+            <div class="flashcard-input-group">
+              <label class="flashcard-input-label">Câu hỏi</label>
+              <input class="form-input" placeholder="Câu hỏi" type="text" name="question_{{ loop.index0 }}" value="{{question}}" />
+            </div>
+            
+            <div class="flashcard-input-group">
+              <label class="flashcard-input-label">Câu trả lời</label>
+              <input class="form-input" placeholder="Câu trả lời" type="text" name="answer_{{ loop.index0 }}" value="{{questions[question]}}" />
+            </div>
+            
+            <button class="btn btn-danger btn-sm" type="submit" formaction="{{ url_for('flashcards.flashcards_delete_question', set_id=set_id, index=loop.index0) }}">
+              <i class="trash alternate outline icon"></i>
+              Xóa
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <i class="clone outline icon"></i>
+        <p class="empty-state-text">Bộ thẻ này chưa có thẻ nào. Thêm thẻ mới để bắt đầu.</p>
+      </div>
+    {% endif %}
+  </form>
+
+  <div class="actions">
+    <div class="actions-left">
+      <a href="{{ url_for('flashcards.flashcards_delete', set_id=set_id) }}" class="btn btn-danger">
+        <i class="trash alternate outline icon"></i>
+        Xóa bộ thẻ
+      </a>
+    </div>
+    
+    <div class="actions-right">
+      <a href="{{ url_for('flashcards.flashcards') }}" class="btn btn-secondary">
+        <i class="arrow left icon"></i>
+        Quay lại danh sách
+      </a>
+      
+      <button class="btn btn-primary" type="submit" form="questions" formaction="{{ url_for('flashcards.flashcards_add', set_id=set_id) }}">
+        <i class="plus icon"></i>
+        Thêm thẻ
+      </button>
+      
+      <button class="btn btn-primary" type="submit" form="questions">
+        <i class="save icon"></i>
+        Lưu bộ thẻ
+      </button>
+      
+      <a href="{{ url_for('flashcards.flashcards_start_set', set_id=set_id) }}" class="btn btn-primary">
+        <i class="play icon"></i>
+        Học ngay
+      </a>
+      
+      <a href="{{ url_for('quizzes.create_quiz_from_set', set_id=set_id) }}" class="btn btn-primary">
+        <i class="question icon"></i>
+        Tạo bài kiểm tra
+      </a>
     </div>
   </div>
 </div>
-
-{% if questions %} {% for question in questions.keys() %}
-<div class="ui segment">
-  <div class="ui grid">
-    <div class="row">
-      <div class="ui eight wide column">
-        <div class="ui form">
-          <input
-            placeholder="Question"
-            type="text"
-            name="question_{{ loop.index0 }}"
-            value="{{question}}"
-            form="questions"
-          />
-        </div>
-      </div>
-      <div class="ui seven wide column">
-        <div class="ui form">
-          <input
-            placeholder="Answer"
-            type="text"
-            name="answer_{{ loop.index0 }}"
-            value="{{questions[question]}}"
-            form="questions"
-          />
-        </div>
-      </div>
-      <div class="ui one wide column">
-        <button
-          class="ui red button icon"
-          type="submit"
-          form="questions"
-          formaction="{{ url_for('flashcards.flashcards_delete_question', set_id=set_id, index=loop.index0) }}"
-        >
-          <i class="small trash alternate outline icon"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="ui vertical divider"></div>
-</div>
-{% endfor %} {% else %}
-<div class="ui segment">
-  <div class="ui sixteen wide column">
-    <label>This deck has no cards</label>
-  </div>
-</div>
-{%endif%}
-
-<a href="{{ url_for('flashcards.flashcards_delete', set_id=set_id) }}">
-  <button class="ui left floated red button">
-    <i class="small trash alternate outline icon"></i>
-    Delete Deck
-  </button>
-</a>
-<a href="{{ url_for('flashcards.flashcards_start_set', set_id=set_id) }}">
-  <button class="ui right floated teal button">
-    <i class="small clone icon"></i>
-    Play Deck
-  </button>
-</a>
-
-<button class="ui right floated teal button" type="submit" form="questions">
-  <i class="small save icon"></i>
-  Save Deck
-</button>
-
-<button
-  class="ui right floated teal button"
-  type="submit"
-  form="questions"
-  formaction="{{ url_for('flashcards.flashcards_add', set_id=set_id) }}"
->
-  <i class="small plus icon"></i>
-  Add Card
-</button>
-
-<a href="{{ url_for('quizzes.create_quiz_from_set', set_id=set_id) }}">
-  <button class="ui right floated teal button">
-    <i class="small question icon"></i>
-    Generate Quiz
-  </button>
-</a>
-
-<a href="{{ url_for('flashcards.flashcards') }}">
-  <button class="ui right floated gray button">Back to Sets</button>
-</a>
 
 {% endblock %}

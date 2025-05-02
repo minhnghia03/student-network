@@ -1,16 +1,328 @@
 {% extends "base.html" %}
 <meta property="og:title" content="{{ title }}" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
 <meta property="og:description" content="{{ body|truncate(150) }}" />
-{% block title %}Post{% endblock %} {% block content %}
+{% block title %}{{ title }}{% endblock %} 
+{% block content %}
 
 <style>
+  /* Main container styles */
+  .post-container {
+    max-width: 900px;
+    margin: 0 auto 40px;
+  }
+  
+  /* Post card styles */
+  .post-card {
+    background-color: var(--bg-white);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: none;
+  }
+  
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .post-author {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-dark);
+  }
+  
+  .post-author img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .post-author-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .post-author-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+  }
+  
+  .post-author-role {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  
+  .post-back {
+    color: var(--text-medium);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    padding: 8px 12px;
+    border-radius: var(--button-radius);
+  }
+  
+  .post-back:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .post-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 15px 0 10px;
+    padding: 0 25px;
+  }
+  
+  .post-date {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    padding: 0 25px 15px;
+    text-align: right;
+  }
+  
+  .post-content {
+    padding: 20px 25px;
+  }
+  
+  .post-text {
+    color: var(--text-medium);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    margin-bottom: 20px;
+  }
+  
+  .post-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px 25px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .like-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: var(--button-radius);
+    transition: all 0.2s ease;
+  }
+  
+  .like-button i {
+    font-size: 1.2rem;
+  }
+  
+  .like-button.active {
+    color: var(--danger);
+  }
+  
+  .like-button:hover {
+    background-color: rgba(220, 38, 38, 0.1);
+  }
+  
+  .like-count {
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+  }
+  
+  /* Comments section styles */
+  .comments-section {
+    background-color: var(--bg-white);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    border: none;
+  }
+  
+  .comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .comments-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  .comments-count {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  
+  .comment-list {
+    padding: 15px 25px;
+  }
+  
+  .comment-item {
+    display: flex;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .comment-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  
+  .comment-content {
+    flex-grow: 1;
+    background-color: var(--bg-light);
+    border-radius: 15px;
+    padding: 12px 15px;
+    position: relative;
+  }
+  
+  .comment-author {
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+    margin-right: 8px;
+  }
+  
+  .comment-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+  
+  .comment-body {
+    margin-top: 5px;
+    color: var(--text-medium);
+    line-height: 1.5;
+  }
+  
+  .comment-delete {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: none;
+    border: none;
+    padding: 5px;
+    color: var(--danger);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .comment-delete:hover {
+    opacity: 1;
+  }
+  
+  .comment-form-container {
+    padding: 20px 25px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .comment-textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--button-radius);
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 15px;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  
+  .comment-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .comment-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .post-delete-btn {
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: var(--button-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .post-delete-btn:hover {
+    background-color: #c11c1c;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+  }
+  
+  .comment-submit {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--button-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .comment-submit:hover {
+    box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);
+  }
+  
+  /* Slideshow styles */
+  .slideshow-container {
+    margin: 20px 0;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    max-height: 500px;
+    background-color: #000;
+    position: relative;
+  }
+  
+  /* YouTube embeds */
   .youtube-wrap {
-    max-width: 560px;
-    margin-bottom: 1em;
+    max-width: 100%;
+    margin-bottom: 1.5em;
+    border-radius: var(--button-radius);
+    overflow: hidden;
   }
 
   .youtube {
@@ -19,6 +331,7 @@
     padding-top: 56.25%;
     overflow: hidden;
     cursor: pointer;
+    border-radius: var(--button-radius);
   }
 
   .youtube img {
@@ -27,14 +340,16 @@
     top: -16.82%;
     left: 0;
     opacity: 0.7;
+    transition: all 0.3s ease;
   }
 
   .youtube-play {
     width: 70px;
     height: 50px;
     z-index: 1;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 15px 15px 15px 15px / 45px 45px 45px 45px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    transition: all 0.3s ease;
   }
 
   .youtube-play:before {
@@ -45,7 +360,12 @@
   }
 
   .youtube:hover > .youtube-play {
-    background: red;
+    background: var(--danger);
+    transform: scale(1.1);
+  }
+  
+  .youtube:hover img {
+    opacity: 0.9;
   }
 
   .youtube img,
@@ -72,191 +392,190 @@
     width: 100%;
     top: 0;
     left: 0;
+    border-radius: var(--button-radius);
   }
 
   .tagged_user {
-    color: #0a66c2;
-    font-weight: 700;
+    color: var(--primary);
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .tagged_user:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .post-header {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-start;
+    }
+    
+    .post-back {
+      align-self: flex-start;
+    }
+    
+    .comment-actions {
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .post-delete-btn, .comment-submit {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
+
+<div class="post-container">
+  <!-- Post Card -->
+  <div class="post-card">
+    <!-- Post Header -->
+    <div class="post-header">
+      <a href="/profile/{{ username }}" class="post-author">
+        <img src="{{ avatar }}" alt="{{ username }}'s avatar" />
+        <div class="post-author-info">
+          <span class="post-author-name">{{ username }}</span>
+          <span class="post-author-role">{{ account_type[0] }}</span>
+        </div>
+      </a>
+      <a href="{{ url_for('posts.feed') }}" class="post-back">
+        <i class="arrow left icon"></i>
+        Quay lại bảng tin
+      </a>
+    </div>
+    
+    <!-- Post Title & Date -->
+    <h1 class="post-title">{{ title }}</h1>
+    <div class="post-date">{{ date }}</div>
+    
+    <!-- Post Content -->
+    <div class="post-content">
+      <div class="post-text apply-markdown">{{ body }}</div>
+      
+      <!-- Slideshow Images -->
+      <div id="slideshow-images" class="slideshow-container"></div>
+    </div>
+    
+    <!-- Post Actions -->
+    <div class="post-actions">
+      <form action="{{ url_for('posts.like_post') }}" id="likes" method="POST">
+        <input type="hidden" name="postId" value="{{ postId }}" />
+        {% if liked == True %}
+          <button type="submit" class="like-button active">
+            <i class="heart icon"></i>
+            <span class="like-count">{{ likes }}</span>
+          </button>
+        {% else %}
+          <button type="submit" class="like-button">
+            <i class="heart outline icon"></i>
+            <span class="like-count">{{ likes }}</span>
+          </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+  
+  <!-- Comments Section -->
+  <div class="comments-section">
+    <!-- Comments Header -->
+    <div class="comments-header">
+      <h2 class="comments-title">Bình luận</h2>
+      <div class="comments-count">{{ comments["comments"] | length }}</div>
+    </div>
+    
+    <!-- Comments List -->
+    <div class="comment-list">
+      {% for comment in comments["comments"] %}
+        <div class="comment-item">
+          <img src="{{ comment.profilePic }}" alt="{{ comment.username }}" class="comment-avatar" />
+          <div class="comment-content">
+            <div>
+              <a href="/profile/{{ comment.username }}" class="comment-author">{{ comment.username }}</a>
+              <span class="comment-date">{{ comment.date }}</span>
+            </div>
+            <div class="comment-body">{{ comment.body }}</div>
+            
+            {% if session["username"] == comment.username or user_account_type == "staff" %}
+              <form action="{{ url_for('posts.delete_comment') }}" id="deleteComment{{ comment.commentId }}" method="POST">
+                <input type="hidden" name="postId" value="{{ postId }}" />
+                <input type="hidden" name="commentId" value="{{ comment.commentId }}" />
+                <button type="submit" class="comment-delete">
+                  <i class="trash alternate outline icon"></i>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      
+      {% if comments["comments"] | length == 0 %}
+        <div style="text-align: center; padding: 30px 0; color: var(--text-light);">
+          <i class="comments outline icon" style="font-size: 2rem; margin-bottom: 10px;"></i>
+          <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Comment Form -->
+    <div class="comment-form-container">
+      <form action="{{ url_for('posts.submit_comment') }}" id="comment" method="POST">
+        <input type="hidden" name="postId" value="{{ postId }}" />
+        <textarea 
+          name="comment_text" 
+          class="comment-textarea" 
+          placeholder="Viết bình luận của bạn..."
+          required></textarea>
+        
+        <div class="comment-actions">
+          {% if session["username"] == username or user_account_type == "staff" %}
+            <form action="{{ url_for('posts.delete_post') }}" id="deletePost" method="POST">
+              <input type="hidden" name="postId" value="{{ postId }}" />
+              <button type="submit" class="post-delete-btn">
+                <i class="trash alternate outline icon"></i>
+                Xóa bài viết
+              </button>
+            </form>
+          {% else %}
+            <div></div>
+          {% endif %}
+          
+          <button type="submit" form="comment" class="comment-submit">
+            <i class="paper plane outline icon"></i>
+            Đăng bình luận
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
 <script src="../static/FormatBody.js"></script>
 <script src="../static/slideshow.js"></script>
-
 <link rel="stylesheet" href="../static/styles/slideshow.css" type="text/css" />
 
-<div class="ui segment basic">
-  <div class="ui grid">
-    <div class="sixteen wide column">
-      <div class="ui cards">
-        <div class="ui card fluid">
-          <div class="content">
-            <a href="/profile/{{ username }}" class="ui basic image label">
-              <img src="{{ avatar }}" alt="" />
-              {{ username }}
-              <div class="detail">{{ account_type[0] }}</div>
-            </a>
-            <a href="{{ url_for('posts.feed') }}" class="right floated"
-              >Back To Feed</a
-            >
-            <div class="ui horizontal divider hidden"></div>
-            <div class="header">{{ title }}</div>
-
-            <div class="ui divider hidden"></div>
-            <div class="right floated meta">{{ date }}</div>
-          </div>
-          <div class="content">
-            <div class="centered">
-              <div style="overflow-wrap: anywhere" class="apply-markdown">
-                {{ body }}
-              </div>
-            </div>
-            <div id="slideshow-images">
-              <!--
-                            {% for image in images %}
-                            <img class="slideshow-img" src="/static/images/post_imgs/{{image[0]}}.jpg">
-                            {% endfor %}
--->
-            </div>
-            <div>
-              <div class="ui right floated mini labeled button" tabindex="0">
-                {% if liked == True %}
-                <button class="ui mini red button" form="likes">
-                  <i class="heart icon"></i>
-                </button>
-                {% else %}
-                <button class="ui mini button" form="likes">
-                  <i class="heart icon"></i>
-                </button>
-                {% endif %}
-                <a class="ui basic mini red left pointing label">
-                  {{ likes }}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="ui card fluid">
-          <div class="content">
-            <div class="ui comments">
-              <form
-                action="{{ url_for('posts.like_post') }}"
-                class="ui reply form"
-                id="likes"
-                method="POST"
-              >
-                <input type="hidden" name="postId" value="{{ postId }}" />
-              </form>
-
-              <h3>Comments ({{comments["comments"] | length}})</h3>
-              {% for comment in comments["comments"] %}
-              <div class="comment">
-                <a class="avatar">
-                  <img src="{{ comment.profilePic }}" alt="" />
-                </a>
-                <div class="content">
-                  <a class="author">{{ comment.username }}</a>
-                  <div class="metadata">
-                    <span class="date">{{ comment.date }}</span>
-                  </div>
-                  {% if session["username"] == comment.username or
-                  user_account_type == "staff" %}
-                  <button
-                    type="submit"
-                    form="deleteComment{{ comment.commentId }}"
-                    class="ui mini red button icon"
-                  >
-                    <i class="small trash alternate outline icon"></i>
-                  </button>
-                  {% endif %}
-                  <form
-                    action="{{ url_for('posts.delete_comment') }}"
-                    class="ui reply form"
-                    id="deleteComment{{ comment.commentId }}"
-                    method="POST"
-                  >
-                    <input type="hidden" name="postId" value="{{ postId }}" />
-                    <input
-                      type="hidden"
-                      name="commentId"
-                      value="{{ comment.commentId }}"
-                    />
-                  </form>
-                  <div class="text">{{ comment.body }}</div>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-            <div class="hidden content">
-              <div>
-                <form
-                  action="{{ url_for('posts.submit_comment') }}"
-                  class="ui reply form"
-                  id="comment"
-                  method="POST"
-                >
-                  <input type="hidden" name="postId" value="{{ postId }}" />
-                  <div class="field">
-                    <label>
-                      <textarea
-                        placeholder="Comment here"
-                        name="comment_text"
-                      ></textarea>
-                    </label>
-                  </div>
-                </form>
-                <form
-                  action="{{ url_for('posts.delete_post') }}"
-                  class="ui form"
-                  id="deletePost"
-                  method="POST"
-                >
-                  <input type="hidden" name="postId" value="{{ postId }}" />
-                </form>
-                <br />
-                {% if session["username"] == username or user_account_type ==
-                "staff" %}
-                <input
-                  type="submit"
-                  value="Delete Post"
-                  form="deletePost"
-                  class="negative left floated ui button"
-                />
-                {% endif %}
-                <input
-                  type="submit"
-                  value="Post comment"
-                  form="comment"
-                  class="ui right floated blue button"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 <script>
+  // Format markdown content
   var markdownElements = document.querySelectorAll(".apply-markdown");
-
   for (let elem of markdownElements) {
     elem.innerHTML = FormatBody(elem.innerHTML);
   }
 
+  // Setup slideshow
   var imageUrls = [];
+  var imagesToDisplay = JSON.parse('{{images | tojson | safe}}');
 
-  var imagesToDisplay = JSON.parse("{{images | tojson | safe}}");
-
-  // remove the nested arrays since it returns a 2D list
-  imagesToDisplay = imagesToDisplay.map(function (x) {
+  // Remove nested arrays
+  imagesToDisplay = imagesToDisplay.map(function(x) {
     return "/static/images/post_imgs/" + x[0] + ".jpg";
   });
 
-  if (imagesToDisplay.lengt > 0) {
+  if (imagesToDisplay.length > 0) {
     new Slideshow(
       "slideshow-images",
       imagesToDisplay,

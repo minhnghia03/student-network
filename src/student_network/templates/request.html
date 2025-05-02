@@ -1,184 +1,500 @@
-<meta property="og:title" content="Reconnect | Connections" />
-<meta
-  property="og:image"
-  content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg"
-/>
-<meta
-  property="og:description"
-  content="The Student Network. Connecting students in and outside the classroom."
-/>
-{% extends "base.html" %} {% block title %}Request{% endblock %} {% block
-content %}
-<div class="ui segment">
-  {%if requests|length == 0 and connections|length == 0 %}
-  <div class="ui message orange" style="text-align: center">
-    No connections to show
+<meta property="og:title" content="HSA Connect | Kết nối" />
+<meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
+<meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
+
+{% extends "base.html" %}
+{% block title %}Kết nối{% endblock %}
+{% block content %}
+
+<style>
+  /* Color variables */
+  :root {
+    --primary: #6e8efb;
+    --primary-light: rgba(110, 142, 251, 0.1);
+    --primary-hover: rgba(110, 142, 251, 0.2);
+    --secondary: #a777e3;
+    --secondary-light: rgba(167, 119, 227, 0.1);
+    --secondary-hover: rgba(167, 119, 227, 0.2);
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --light-gradient: linear-gradient(135deg, rgba(110, 142, 251, 0.1), rgba(167, 119, 227, 0.1));
+    --danger: #ff5e87;
+    --success: #28a745;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #888;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-radius: 15px;
+    --input-radius: 8px;
+    --button-radius: 8px;
+  }
+
+  /* Main container */
+  .connections-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* Header section */
+  .connections-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .connections-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .connections-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Card styles */
+  .connection-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+
+  .card-header {
+    background: var(--light-gradient);
+    padding: 20px 25px;
+    position: relative;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title i {
+    color: var(--primary);
+  }
+  
+  .card-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+  }
+
+  .card-body {
+    padding: 20px 25px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-light);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+
+  .empty-state-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-medium);
+  }
+
+  .empty-state-text {
+    color: var(--text-light);
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* Connection list */
+  .connection-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+
+  .connection-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .connection-item:last-child {
+    border-bottom: none;
+  }
+
+  .connection-item:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+  }
+
+  .connection-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+  }
+
+  .connection-info {
+    flex: 1;
+  }
+
+  .connection-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .connection-name:hover {
+    color: var(--primary);
+  }
+
+  .close-friend-badge {
+    color: var(--primary);
+    cursor: help;
+  }
+
+  .connection-meta {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 3px;
+  }
+
+  .connection-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Button styles */
+  .btn {
+    border: none;
+    border-radius: var(--button-radius);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-success {
+    background-color: var(--success);
+    color: white;
+  }
+
+  .btn-success:hover {
+    background-color: #218838;
+  }
+
+  .btn-danger {
+    background-color: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: #e83e5a;
+  }
+
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 5px 15px rgba(110, 142, 251, 0.3);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .connection-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .connection-info {
+      margin-bottom: 15px;
+      width: 100%;
+    }
+
+    .connection-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+    
+    .connection-avatar {
+      width: 35px;
+      height: 35px;
+      margin-right: 10px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .card-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .card-badge {
+      margin-left: 0;
+    }
+    
+    .connection-actions {
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="connections-container">
+  <div class="connections-header">
+    <h1 class="connections-title">Quản Lý Kết Nối</h1>
+    <p class="connections-subtitle">Chấp nhận các yêu cầu kết nối mới, quản lý danh sách bạn bè và khám phá những người dùng mới</p>
   </div>
-  {% endif %} {%if requests|length > 0%}
-  <div class="ui horizontal divider">
-    Your Connection Requests ({{requests|length}})
-  </div>
-  <div class="ui middle aligned list">
-    {% for i in range(requests|length) %}
-    <div class="item">
-      <div class="ui mini buttons right floated">
-        <form
-          action="{{ url_for('connections.accept_connection_request', username=requests[i]) }}"
-          method="GET"
-        >
-          <button class="ui green button tiny">
-            <i class="user icon"></i>
-            Accept
-          </button>
-        </form>
-        <div class="or"></div>
-        <form
-          action="{{ url_for('connections.remove_connection', username=requests[i]) }}"
-          method="GET"
-        >
-          <button class="ui red button tiny">
-            <i class="user icon"></i>
-            Deny
-          </button>
-        </form>
-      </div>
-      <img class="ui avatar image" src="{{ avatars[i] }}" />
-      <div class="content">
-        <a href="{{ url_for('profile.profile', username=requests[i]) }}"
-          >{{ requests[i] }}</a
-        >
-      </div>
+
+  {% if requests|length == 0 and connections|length == 0 and pending|length == 0 and blocked|length == 0 and mutuals|length == 0 %}
+  <div class="connection-card">
+    <div class="card-body empty-state">
+      <i class="users icon"></i>
+      <h3 class="empty-state-title">Không có kết nối nào</h3>
+      <p class="empty-state-text">Bắt đầu kết nối với những người dùng khác để xây dựng mạng lưới của bạn trên HSA Connect</p>
     </div>
-    {% endfor %}
-  </div>
-  {%endif%} {%if connections|length > 0%}
-  <div class="ui horizontal divider">
-    Your Connections ({{connections|length}})
-  </div>
-  <div class="ui middle aligned list">
-    {% for connection in connections %}
-    <div class="item">
-      <div class="ui mini buttons right floated">
-        <form
-          action="{{ url_for('connections.remove_connection', username=connection[0]) }}"
-          method="GET"
-        >
-          <button class="ui red button tiny">
-            <i class="close icon"></i>
-            Disconnect
-          </button>
-        </form>
-      </div>
-      <img class="ui avatar image" src="{{ connection[1] }}" />
-      <div class="content">
-        <a href="{{ url_for('profile.profile', username=connection[0]) }}"
-          >{{ connection[0] }}</a
-        >
-        {% if connection[2]%}
-        <span data-tooltip="Close Friends">
-          <i class="handshake outline icon"></i>
-        </span>
-        {%endif%}
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {%endif%} {%if pending|length > 0%}
-  <div class="ui horizontal divider">
-    Your Pending Connections ({{pending|length}})
-  </div>
-  <div class="ui middle aligned list">
-    {% for connection in pending %}
-    <div class="item">
-      <div class="ui mini buttons right floated">
-        <form
-          action="{{ url_for('connections.remove_connection', username=connection[0]) }}"
-          method="GET"
-        >
-          <button class="ui red button tiny">
-            <i class="close icon"></i>
-            Cancel
-          </button>
-        </form>
-      </div>
-      <img class="ui avatar image" src="{{ connection[1] }}" />
-      <div class="content">
-        {% if connection[2]%}
-        <span data-tooltip="Close Friends">
-          <i class="handshake outline icon"></i>
-        </span>
-        {%endif%}
-        <a href="{{ url_for('profile.profile', username=connection[0]) }}"
-          >{{ connection[0] }}</a
-        >
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {%endif%} {%if blocked|length > 0%}
-  <div class="ui horizontal divider">
-    Your Blocked Connections ({{blocked|length}})
-  </div>
-  <div class="ui middle aligned list">
-    {% for connection in blocked %}
-    <div class="item">
-      <div class="ui mini buttons right floated">
-        <form
-          action="{{ url_for('connections.unblock_user', username=connection[0]) }}"
-          method="GET"
-        >
-          <button class="ui red button tiny">
-            <i class="close icon"></i>
-            Unblock
-          </button>
-        </form>
-      </div>
-      <img class="ui avatar image" src="{{ connection[1] }}" />
-      <div class="content">
-        {% if connection[2]%}
-        <span data-tooltip="Close Friends">
-          <i class="handshake outline icon"></i>
-        </span>
-        {%endif%}
-        <a href="{{ url_for('profile.profile', username=connection[0]) }}"
-          >{{ connection[0] }}</a
-        >
-      </div>
-    </div>
-    {% endfor %}
   </div>
   {% endif %}
-  <div class="ui horizontal divider">Recommended Connections</div>
-  <div class="ui middle aligned list">
-    {% if mutuals|length > 0 %} {% for i in range(mutuals|length) %}
-    <div class="item">
-      <div class="ui mini buttons right floated">
-        <form
-          action="{{ url_for('connections.connect_request', username=mutuals[i][0]) }}"
-          method="POST"
-          id="connect-request"
-        >
-          <button class="ui blue button tiny">
-            <i class="user icon"></i>
-            Connect
-          </button>
-        </form>
-      </div>
-      <img class="ui avatar image" src="{{ mutual_avatars[i] }}" />
-      <div class="content">
-        <a href="{{ url_for('profile.profile', username=mutuals[i][0]) }}"
-          >{{mutuals[i][0]}}</a
-        >
-        <br />
-        {{mutuals[i][1] | safe}}
-      </div>
+
+  {% if requests|length > 0 %}
+  <div class="connection-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="user plus icon"></i>
+        Yêu cầu kết nối 
+        <span class="card-badge">{{requests|length}}</span>
+      </h2>
     </div>
-    {% endfor %} {% else %}
-    <div class="ui message orange" style="text-align: center">
-      Try connecting to more people or adding information to your profile to get
-      connection recommendations
+    <div class="card-body">
+      <ul class="connection-list">
+        {% for i in range(requests|length) %}
+        <li class="connection-item">
+          <img class="connection-avatar" src="{{ avatars[i] }}" alt="{{ requests[i] }}">
+          <div class="connection-info">
+            <a href="{{ url_for('profile.profile', username=requests[i]) }}" class="connection-name">{{ requests[i] }}</a>
+          </div>
+          <div class="connection-actions">
+            <form action="{{ url_for('connections.accept_connection_request', username=requests[i]) }}" method="GET">
+              <button class="btn btn-success">
+                <i class="check icon"></i>
+                Chấp nhận
+              </button>
+            </form>
+            <form action="{{ url_for('connections.remove_connection', username=requests[i]) }}" method="GET">
+              <button class="btn btn-danger">
+                <i class="times icon"></i>
+                Từ chối
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
-    {%endif%}
+  </div>
+  {% endif %}
+
+  {% if connections|length > 0 %}
+  <div class="connection-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="users icon"></i>
+        Kết nối của bạn
+        <span class="card-badge">{{connections|length}}</span>
+      </h2>
+    </div>
+    <div class="card-body">
+      <ul class="connection-list">
+        {% for connection in connections %}
+        <li class="connection-item">
+          <img class="connection-avatar" src="{{ connection[1] }}" alt="{{ connection[0] }}">
+          <div class="connection-info">
+            <a href="{{ url_for('profile.profile', username=connection[0]) }}" class="connection-name">
+              {{ connection[0] }}
+              {% if connection[2] %}
+              <span class="close-friend-badge" data-tooltip="Bạn thân">
+                <i class="handshake outline icon"></i>
+              </span>
+              {% endif %}
+            </a>
+          </div>
+          <div class="connection-actions">
+            <form action="{{ url_for('connections.remove_connection', username=connection[0]) }}" method="GET">
+              <button class="btn btn-danger">
+                <i class="user times icon"></i>
+                Hủy kết nối
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if pending|length > 0 %}
+  <div class="connection-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="hourglass half icon"></i>
+        Yêu cầu đang chờ
+        <span class="card-badge">{{pending|length}}</span>
+      </h2>
+    </div>
+    <div class="card-body">
+      <ul class="connection-list">
+        {% for connection in pending %}
+        <li class="connection-item">
+          <img class="connection-avatar" src="{{ connection[1] }}" alt="{{ connection[0] }}">
+          <div class="connection-info">
+            <a href="{{ url_for('profile.profile', username=connection[0]) }}" class="connection-name">
+              {{ connection[0] }}
+              {% if connection[2] %}
+              <span class="close-friend-badge" data-tooltip="Bạn thân">
+                <i class="handshake outline icon"></i>
+              </span>
+              {% endif %}
+            </a>
+          </div>
+          <div class="connection-actions">
+            <form action="{{ url_for('connections.remove_connection', username=connection[0]) }}" method="GET">
+              <button class="btn btn-danger">
+                <i class="ban icon"></i>
+                Hủy yêu cầu
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if blocked|length > 0 %}
+  <div class="connection-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="ban icon"></i>
+        Người dùng đã chặn
+        <span class="card-badge">{{blocked|length}}</span>
+      </h2>
+    </div>
+    <div class="card-body">
+      <ul class="connection-list">
+        {% for connection in blocked %}
+        <li class="connection-item">
+          <img class="connection-avatar" src="{{ connection[1] }}" alt="{{ connection[0] }}">
+          <div class="connection-info">
+            <a href="{{ url_for('profile.profile', username=connection[0]) }}" class="connection-name">
+              {{ connection[0] }}
+              {% if connection[2] %}
+              <span class="close-friend-badge" data-tooltip="Bạn thân">
+                <i class="handshake outline icon"></i>
+              </span>
+              {% endif %}
+            </a>
+          </div>
+          <div class="connection-actions">
+            <form action="{{ url_for('connections.unblock_user', username=connection[0]) }}" method="GET">
+              <button class="btn btn-primary">
+                <i class="unlock icon"></i>
+                Bỏ chặn
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="connection-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="lightbulb icon"></i>
+        Gợi ý kết nối
+      </h2>
+    </div>
+    <div class="card-body">
+      {% if mutuals|length > 0 %}
+      <ul class="connection-list">
+        {% for i in range(mutuals|length) %}
+        <li class="connection-item">
+          <img class="connection-avatar" src="{{ mutual_avatars[i] }}" alt="{{ mutuals[i][0] }}">
+          <div class="connection-info">
+            <a href="{{ url_for('profile.profile', username=mutuals[i][0]) }}" class="connection-name">{{mutuals[i][0]}}</a>
+            <div class="connection-meta">{{mutuals[i][1] | safe}}</div>
+          </div>
+          <div class="connection-actions">
+            <form action="{{ url_for('connections.connect_request', username=mutuals[i][0]) }}" method="POST" id="connect-request">
+              <button class="btn btn-primary">
+                <i class="user plus icon"></i>
+                Kết nối
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty-state">
+        <i class="compass icon"></i>
+        <h3 class="empty-state-title">Không tìm thấy gợi ý</h3>
+        <p class="empty-state-text">Hãy kết nối với thêm người hoặc bổ sung thông tin cá nhân của bạn để nhận các gợi ý kết nối phù hợp</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
 </div>
-{%endblock%}
+
+{% endblock %}
