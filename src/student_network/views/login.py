@@ -216,8 +216,8 @@ def register_submit() -> object:
                 (
                     username,
                     full_name,
-                    "Change your bio in the settings.",
-                    "Male",
+                    "Thay đổi bio của bạn trong cài đặt.",
+                    "Nam",
                     date.today(),
                     "/static/images/default-pfp.jpg",
                 ),

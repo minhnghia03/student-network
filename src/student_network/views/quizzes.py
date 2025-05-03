@@ -106,7 +106,7 @@ def quiz(quiz_id: int) -> object:
 
         # Displays an error message if they have not answered all questions.
         if any(user_answers) == "":
-            session["error"] = "You have not answered all the questions!"
+            session["error"] = "Bạn chưa trả lời tất cả các câu hỏi!"
             return redirect(session["prev-page"])
         else:
             # 1 exp earned for the author of the quiz

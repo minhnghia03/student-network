@@ -47,32 +47,32 @@ def validate_registration(
         or password_confirm == ""
         or email == ""
     ):
-        message.append("Not all fields have been filled in!")
+        message.append("Một số trường chưa được điền!")
         valid = False
 
     # Checks that the username only contains valid characters.
     if username.isalnum() is False:
-        message.append("Username must only contain letters and numbers!")
+        message.append("Tên tài khoản chỉ được chứa chữ cái và số!")
         valid = False
     # Checks that the username hasn't already been registered.
     cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
     if cur.fetchone() is not None:
-        message.append("Username has already been registered!")
+        message.append("Tên tài khoản đã được đăng ký!")
         valid = False
 
     # Checks that the full name doesn't exceed 40 characters.
     if len(full_name) > 40:
-        message.append("Full name exceeds 40 characters!")
+        message.append("Tên đầy đủ vượt quá 40 ký tự!")
         valid = False
     # Checks that the full name only contains valid characters.
     if not all(x.isalpha() or x.isspace() for x in full_name):
-        message.append("Full name must only contain letters and spaces!")
+        message.append("Tên đầy đủ chỉ được chứa chữ cái và khoảng trắng!")
         valid = False
 
     # Checks that the email hasn't already been registered.
     cur.execute("SELECT * FROM accounts WHERE email=%s;", (email,))
     if cur.fetchone() is not None:
-        message.append("Email has already been registered!")
+        message.append("Email đã được đăng ký!")
         valid = False
     # Checks that the email address has the correct format, checks whether it
     # exists, and isn't a blacklist email.
@@ -87,30 +87,27 @@ def validate_registration(
             domain_type = domain.split(".")[1]
             if domain_type not in ["ac", "edu"]:
                 valid = False
-                message.append(
-                    "Email does not belong to a registered educational institute!"
-                )
+                message.append("Email không thuộc trường đại học đã đăng ký!")
     except EmailNotValidError:
-        message.append("Email is invalid!")
+        message.append("Email không hợp lệ!")
         valid = False
 
     # Checks that the password has a minimum length of 8 characters, and at
     # least one number.
     if len(password) <= 7 or any(char.isdigit() for char in password) is False:
         message.append(
-            "Password does not meet requirements! It must contain "
-            "at least eight characters, including at least one "
-            "number."
+            "Mật khẩu không đáp ứng yêu cầu! Nó phải chứa ít nhất 8 ký tự, "
+            "bao gồm ít nhất một số."
         )
         valid = False
     # Checks that the passwords match.
     if password != password_confirm:
-        message.append("Passwords do not match!")
+        message.append("Mật khẩu không khớp!")
         valid = False
 
     # Checks that the terms of service has been ticked.
     if terms is None:
-        message.append("You must accept the terms of service!")
+        message.append("Bạn phải chấp nhận điều khoản dịch vụ!")
         valid = False
 
     return valid, message

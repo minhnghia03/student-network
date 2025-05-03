@@ -24,7 +24,7 @@ def show_staff_requests() -> object:
         if not session["admin"]:
             return render_template(
                 "error.html",
-                message=["You are not logged in to an admin account"],
+                message=["Bạn không đăng nhập vào tài khoản quản trị"],
                 requestCount=helper_connections.get_connection_request_count(),
             )
         with connect_to_db() as conn:
@@ -47,7 +47,7 @@ def show_staff_requests() -> object:
     else:
         return render_template(
             "error.html",
-            message=["You are not logged in to an admin account"],
+            message=["Bạn không đăng nhập vào tài khoản quản trị"],
             requestCount=helper_connections.get_connection_request_count(),
         )
 

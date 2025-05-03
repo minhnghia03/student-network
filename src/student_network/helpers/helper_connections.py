@@ -372,20 +372,20 @@ def get_recommended_connections(username: str) -> list:
                         l2.append(conec)
                 simlist = l1 + l2
 
-                main = str(count) + " mutual connections including "
+                main = str(count) + " kết nối chung bao gồm "
             elif index == 1:
                 for h in hobbies.keys():
                     if student in hobbies[h]:
                         simlist.append(h)
-                main = "You both enjoy hobbies including "
+                main = "Cả hai đều thích "
             elif index == 2:
                 for i in interests.keys():
                     if student in interests[i]:
                         simlist.append(i)
-                main = "You are both interested in "
+                main = "Cả hai đều quan tâm đến "
 
             else:
-                main = "You both study "
+                main = "Cả hai đều học "
                 simlist.append(degree[1])
 
             main += list_to_string(simlist[:3])
@@ -410,9 +410,9 @@ def list_to_string(input: list) -> str:
     if length == 1:
         return "<b>{}</b>".format(input[0])
     elif length == 2:
-        return "<b>{0}</b> and <b>{1}</b>".format(input[0], input[1])
+        return "<b>{0}</b> và <b>{1}</b>".format(input[0], input[1])
 
-    return "<b>{0}</b>, <b>{1}</b> and <b>{2}</b>".format(input[0], input[1], input[2])
+    return "<b>{0}</b>, <b>{1}</b> và <b>{2}</b>".format(input[0], input[1], input[2])
 
 
 def is_close_friend(username1: str, username2: str) -> bool:

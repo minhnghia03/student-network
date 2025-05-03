@@ -169,22 +169,22 @@ def validate_quiz(
     # Checks that a quiz name has been made.
     if quiz_name.replace(" ", "") == "":
         valid = False
-        message.append("You must enter a quiz name!")
+        message.append("Bạn phải nhập tên quiz!")
     # Checks that at least one question has been entered.
     if len(questions) == 0:
         valid = False
-        message.append("You must enter at least one question!")
+        message.append("Bạn phải nhập ít nhất một câu hỏi!")
     # Checks that all question details have been filled in.
     for question in questions:
         if question == "":
             valid = False
-            message.append("You have entered an empty question!")
+            message.append("Bạn đã nhập một câu hỏi trống!")
     for answer in answers:
         for option in answer:
             if option == "":
                 valid = False
                 message.append(
-                    "You have not entered four answer options for each question!"
+                    "Bạn đã không nhập bốn tùy chọn câu trả lời cho mỗi câu hỏi!"
                 )
 
     return valid, message
@@ -233,7 +233,7 @@ def delete_quiz(quiz_id):
             cur.execute("DELETE FROM quiz WHERE quiz_id=%s;", (quiz_id,))
             conn.commit()
         else:
-            session["error"] = ["You cannot delete another user's quiz"]
+            session["error"] = ["Bạn không thể xóa quiz của người khác"]
 
 
 def get_question_count(cur, quiz_id):

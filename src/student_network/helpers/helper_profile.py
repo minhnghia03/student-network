@@ -141,31 +141,31 @@ def validate_edit_profile(
     # Checks that the bio has a maximum of 160 characters.
     if len(bio) > 160:
         valid = False
-        message.append("Bio must not exceed 160 characters!")
+        message.append("Bio không được vượt quá 160 ký tự!")
 
     # Checks that the gender is male, female, or other.
-    if gender not in ["Male", "Female", "Other"]:
+    if gender not in ["Nam", "Nữ", "Khác"]:
         valid = False
-        message.append("Gender must be male, female, or other!")
+        message.append("Giới tính phải là nam, nữ hoặc khác!")
 
     # Only performs check if a new date of birth was entered.
     if dob:
         # Checks that date of birth is a past date.
         if datetime.today() < dob:
             valid = False
-            message.append("Date of birth must be a past date!")
+            message.append("Ngày sinh phải là ngày trong quá khứ!")
 
     # Checks that each hobby has a maximum of 24 characters.
     for hobby in hobbies:
         if len(hobby) > 24:
             valid = False
-            message.append("Hobbies must not exceed 24 characters!")
+            message.append("Sở thích không được vượt quá 24 ký tự!")
             break
     # Checks that each interest has a maximum of 24 characters.
     for interest in interests:
         if len(interest) > 24:
             valid = False
-            message.append("Interests must not exceed 24 characters!")
+            message.append("Sở thích không được vượt quá 24 ký tự!")
             break
 
     return valid, message
@@ -202,6 +202,6 @@ def validate_profile_pic(file) -> Tuple[bool, List[str], str]:
         img.save(file_path + ".jpg")
     elif file:
         valid = False
-        message.append("Your file must be an image.")
+        message.append("Tệp tin phải là hình ảnh.")
 
     return valid, message, file_name_hashed
