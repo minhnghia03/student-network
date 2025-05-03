@@ -169,7 +169,7 @@ def profile(username: str) -> object:
                     sort_posts = cur.fetchall()
             else:
                 cur.execute(
-                    "SELECT * FROM posts WHERE username=%s AND privacy=='public' ",
+                    "SELECT * FROM posts WHERE username=%s AND privacy='public' ",
                     (username,),
                 )
                 sort_posts = cur.fetchall()

@@ -170,11 +170,12 @@ def accept_connection_request(username: str) -> object:
             cur = conn.cursor()
             cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             if cur.fetchone():
-                row = cur.execute(
+                cur.execute(
                     "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
                     "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
+                row = cur.fetchone()
                 if row:
                     # Gets user from database using username.
                     cur.execute(

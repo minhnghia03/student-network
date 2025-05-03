@@ -28,11 +28,12 @@ def delete_connection(username: str) -> bool:
 
             # Searches for the connection in the database.
             if cur.fetchone() is not None:
-                row = cur.execute(
+                cur.execute(
                     "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
                     "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
+                row = cur.fetchone()
                 # Removes the connection from the database if it exists.
                 if row:
                     cur.execute(
@@ -40,12 +41,13 @@ def delete_connection(username: str) -> bool:
                         "OR (user1=%s AND user2=%s);",
                         (username, session["username"], session["username"], username),
                     )
-                    row = cur.execute(
+                    cur.execute(
                         "SELECT * FROM connection "
                         "WHERE (user1=%s AND user2=%s) "
                         "OR (user1=%s AND user2=%s);",
                         (username, session["username"], session["username"], username),
                     )
+                    row = cur.fetchone()
                     if row:
                         cur.execute(
                             "DELETE FROM close_friend "
