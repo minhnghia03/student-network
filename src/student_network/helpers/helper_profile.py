@@ -144,12 +144,13 @@ def validate_edit_profile(
         message.append("Bio không được vượt quá 160 ký tự!")
 
     # Checks that the gender is male, female, or other.
-    if gender not in ["Nam", "Nữ", "Khác"]:
+    if gender not in ["Male", "Female", "Other"]:
         valid = False
         message.append("Giới tính phải là nam, nữ hoặc khác!")
 
     # Only performs check if a new date of birth was entered.
     if dob:
+        dob = datetime.strptime(dob, "%Y-%m-%d")
         # Checks that date of birth is a past date.
         if datetime.today() < dob:
             valid = False

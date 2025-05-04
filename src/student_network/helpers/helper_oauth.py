@@ -77,7 +77,7 @@ def oauth_login(code: str, session: dict) -> str:
                         username,
                         full_name,
                         "Thay đổi bio của bạn trong cài đặt.",
-                        "Nam",
+                        "Male",
                         date.today(),
                         "/static/images/default-pfp.jpg",
                     ),

@@ -439,8 +439,8 @@ def edit_profile() -> object:
         gender = request.form.get("gender_input")
         dob_input = request.form.get("dob_input")
         dob = datetime.strptime(dob_input, "%Y-%m-%d").strftime("%Y-%m-%d")
-        hobbies_input = request.form.get("hobbies")
-        interests_input = request.form.get("interests")
+        hobbies_input = request.form.get("hobbies_input")
+        interests_input = request.form.get("interests_input")
         degree = request.form.get("degree_input")
         # Gets the individual hobbies and interests, then formats them.
         hobbies_unformatted = hobbies_input.split(",")
@@ -559,6 +559,7 @@ def edit_profile() -> object:
                     date=dob,
                     bio=bio,
                     privacy=privacy,
+                    socials=socials,
                     notifications=helper_general.get_notifications(),
                 )
 
