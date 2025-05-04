@@ -400,6 +400,7 @@
   <div class="page-background"></div>
   
   <!-- Main Navigation -->
+  {% if session["username"] %}
   <nav class="main-navbar">
     <div class="navbar-container">
       <div class="nav-logo">
@@ -563,7 +564,7 @@
       </div>
     </div>
   </nav>
-  
+  {% endif %}
   <div class="ui container">
     {% block content %}{% endblock %}
   </div>
