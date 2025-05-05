@@ -1,9 +1,9 @@
-<meta property="og:title" content="HSA Connect | Bài trắc nghiệm" />
+<meta property="og:title" content="HSA Connect | Quizzes" />
 <meta property="og:image" content="https://i.ibb.co/hL3WsKP/full-logo-jpg.jpg" />
 <meta property="og:description" content="Mạng lưới sinh viên. Kết nối sinh viên trong và ngoài lớp học." />
 
 {% extends "base.html" %}
-{% block title %}Bài trắc nghiệm{% endblock %}
+{% block title %}Quizzes{% endblock %}
 {% block content %}
 
 <style>
@@ -481,17 +481,18 @@
 
 <div class="quizzes-container">
   <div class="quizzes-header">
-    <h1 class="quizzes-title">Bài trắc nghiệm</h1>
+    <h1 class="quizzes-title">Quizzes</h1>
     <p class="quizzes-subtitle">Tạo và tham gia các bài trắc nghiệm để kiểm tra kiến thức của bạn</p>
   </div>
 
   <div class="nav-tabs">
     {% if personal==True %}
-      <a class="nav-tab" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
-      <a class="nav-tab active" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của tôi</a>
+    <a class="nav-tab" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
+    <a class="nav-tab active" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của
+      tôi</a>
     {% else %}
-      <a class="nav-tab active" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
-      <a class="nav-tab" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của tôi</a>
+    <a class="nav-tab active" href="{{ url_for('quizzes.quizzes') }}">Tất cả bài trắc nghiệm</a>
+    <a class="nav-tab" href="{{ url_for('quizzes.quizzes_user', username=username) }}">Bài trắc nghiệm của tôi</a>
     {% endif %}
   </div>
 
@@ -535,60 +536,61 @@
   <!-- Quiz List -->
   <div class="quiz-list">
     {% if quizzes|length > 0 %}
-      {% for quiz in quizzes %}
-      <div class="quiz-card">
-        <div class="quiz-card-body">
-          <h3 class="quiz-card-title">
-            <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
-          </h3>
-          
-          <div class="quiz-card-info">
-            <div class="quiz-author-info">
-              <span>Tạo bởi:</span>
-              <a href="/profile/{{ quiz[2] }}" class="quiz-author-link">
-                {{ quiz[2] }}
-              </a>
-            </div>
-            
-            <div class="quiz-stats">
-              <div class="quiz-stat">
-                <i class="question circle icon"></i>
-                {{ quiz[5] }} {% if quiz[5]==1 %}câu hỏi{% else %}câu hỏi{% endif %}
-              </div>
-              <div class="quiz-stat">
-                <i class="play circle icon"></i>
-                {{ quiz[4] }} {% if quiz[4]==1 %}lượt chơi{% else %}lượt chơi{% endif %}
-              </div>
-            </div>
-          </div>
-          
-          {% if quiz[2] == username %}
-          <div class="quiz-actions">
-            <a href="{{ url_for('quizzes.quizzes_delete', quiz_id=quiz[0]) }}" class="btn btn-danger">
-              <i class="trash alternate icon"></i> Xóa
+    {% for quiz in quizzes %}
+    <div class="quiz-card">
+      <div class="quiz-card-body">
+        <h3 class="quiz-card-title">
+          <a href="/quiz/{{ quiz[0] }}">{{ quiz[3] }}</a>
+        </h3>
+
+        <div class="quiz-card-info">
+          <div class="quiz-author-info">
+            <span>Tạo bởi:</span>
+            <a href="/profile/{{ quiz[2] }}" class="quiz-author-link">
+              {{ quiz[2] }}
             </a>
           </div>
-          {% endif %}
+
+          <div class="quiz-stats">
+            <div class="quiz-stat">
+              <i class="question circle icon"></i>
+              {{ quiz[5] }} {% if quiz[5]==1 %}câu hỏi{% else %}câu hỏi{% endif %}
+            </div>
+            <div class="quiz-stat">
+              <i class="play circle icon"></i>
+              {{ quiz[4] }} {% if quiz[4]==1 %}lượt chơi{% else %}lượt chơi{% endif %}
+            </div>
+          </div>
         </div>
+
+        {% if quiz[2] == username %}
+        <div class="quiz-actions">
+          <a href="{{ url_for('quizzes.quizzes_delete', quiz_id=quiz[0]) }}" class="btn btn-danger">
+            <i class="trash alternate icon"></i> Xóa
+          </a>
+        </div>
+        {% endif %}
       </div>
-      {% endfor %}
+    </div>
+    {% endfor %}
     {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="file alternate outline icon"></i>
-        </div>
-        <h3 class="empty-title">Chưa có bài trắc nghiệm nào</h3>
-        <p class="empty-text">
-          {% if personal==True %}
-            Bạn chưa tạo bài trắc nghiệm nào. Hãy tạo bài trắc nghiệm đầu tiên của bạn!
-          {% else %}
-            Chưa có bài trắc nghiệm nào được tạo. Hãy trở thành người đầu tiên tạo bài trắc nghiệm!
-          {% endif %}
-        </p>
-        <button onclick="document.querySelector('.create-quiz-card').scrollIntoView({behavior: 'smooth'})" class="btn btn-primary">
-          <i class="plus icon"></i> Tạo bài trắc nghiệm
-        </button>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="file alternate outline icon"></i>
       </div>
+      <h3 class="empty-title">Chưa có bài trắc nghiệm nào</h3>
+      <p class="empty-text">
+        {% if personal==True %}
+        Bạn chưa tạo bài trắc nghiệm nào. Hãy tạo bài trắc nghiệm đầu tiên của bạn!
+        {% else %}
+        Chưa có bài trắc nghiệm nào được tạo. Hãy trở thành người đầu tiên tạo bài trắc nghiệm!
+        {% endif %}
+      </p>
+      <button onclick="document.querySelector('.create-quiz-card').scrollIntoView({behavior: 'smooth'})"
+        class="btn btn-primary">
+        <i class="plus icon"></i> Tạo bài trắc nghiệm
+      </button>
+    </div>
     {% endif %}
   </div>
 </div>
@@ -597,7 +599,7 @@
 
 <script>
   function DeleteQuestion(elem) {
-    $(elem).closest('.question-card').slideUp(300, function() {
+    $(elem).closest('.question-card').slideUp(300, function () {
       $(this).remove();
       UpdateQuestions();
     });
@@ -606,7 +608,7 @@
   function UpdateQuestions() {
     $(".question-card").each(function (index) {
       var i = index + 1;
-      
+
       // Update the question number label
       $(this).find('.question-number').text('Câu hỏi ' + i);
 
@@ -621,25 +623,25 @@
 
   function CheckQuestionInputs(card) {
     var allFilled = true;
-    
-    $(card).find('input[type="text"]').each(function() {
+
+    $(card).find('input[type="text"]').each(function () {
       if ($(this).val().trim() === '') {
         allFilled = false;
       }
     });
-    
+
     if (allFilled) {
       $(card).find('.question-label').addClass('visible');
     } else {
       $(card).find('.question-label').removeClass('visible');
     }
-    
+
     return allFilled;
   }
 
   function ToggleQuestionBody(elem) {
     var questionBody = $(elem).closest('.question-card').find('.question-body');
-    
+
     if (questionBody.is(':visible')) {
       questionBody.slideUp(300);
       $(elem).find('i').removeClass('chevron up').addClass('chevron down');
@@ -651,7 +653,7 @@
 
   function NewQuestion() {
     var questionCount = $('.question-card').length + 1;
-    
+
     var html = `
       <div class="question-card">
         <div class="question-header">
@@ -696,53 +698,53 @@
     `;
 
     $("#quizQuestions").append(html);
-    
+
     // Auto-expand the newly created question
     var newQuestion = $(".question-card").last();
-    setTimeout(function() {
+    setTimeout(function () {
       newQuestion.find('.question-toggle').click();
       newQuestion.find('.question-input').focus();
     }, 100);
-    
+
     UpdateQuestions();
   }
-  
+
   // Form validation before submit
-  $("#createQuizForm").on("submit", function(e) {
+  $("#createQuizForm").on("submit", function (e) {
     var quizName = $("input[name='quiz_name']").val().trim();
     var questionCount = $('.question-card').length;
-    
+
     if (quizName === '') {
       e.preventDefault();
       alert('Vui lòng nhập tên bài trắc nghiệm');
       return false;
     }
-    
+
     if (questionCount === 0) {
       e.preventDefault();
       alert('Vui lòng thêm ít nhất một câu hỏi');
       return false;
     }
-    
+
     var allQuestionsValid = true;
-    
-    $('.question-card').each(function() {
+
+    $('.question-card').each(function () {
       if (!CheckQuestionInputs(this)) {
         allQuestionsValid = false;
       }
     });
-    
+
     if (!allQuestionsValid) {
       e.preventDefault();
       alert('Vui lòng điền đầy đủ thông tin cho tất cả các câu hỏi');
       return false;
     }
-    
+
     return true;
   });
-  
+
   // Add at least one question when the page loads
-  $(document).ready(function() {
+  $(document).ready(function () {
     if ($('.question-card').length === 0) {
       NewQuestion();
     }
