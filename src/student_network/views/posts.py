@@ -274,14 +274,19 @@ def search_query() -> dict:
 
         # Filters by username, common hobbies, and interests.
         cur.execute(
-            "SELECT user_profile.username, user_hobby.hobby, "
-            "user_interests.interest FROM user_profile "
-            "LEFT JOIN user_hobby ON user_hobby.username=user_profile.username "
-            "LEFT JOIN user_interests ON "
-            "user_interests.username=user_profile.username "
-            "WHERE (user_profile.username LIKE %s) "
-            "AND (IFNULL(hobby, '') LIKE %s) AND (IFNULL(interest, '') LIKE %s) "
-            "GROUP BY user_profile.username LIMIT 10;",
+            """
+            SELECT user_profile.username, 
+                COALESCE(MIN(user_hobby.hobby), '') AS hobby, 
+                COALESCE(MIN(user_interests.interest), '') AS interest
+            FROM user_profile
+            LEFT JOIN user_hobby ON user_hobby.username = user_profile.username
+            LEFT JOIN user_interests ON user_interests.username = user_profile.username
+            WHERE user_profile.username LIKE %s
+            AND COALESCE(user_hobby.hobby, '') LIKE %s
+            AND COALESCE(user_interests.interest, '') LIKE %s
+            GROUP BY user_profile.username
+            LIMIT 10;
+            """,
             (
                 name_pattern,
                 hobby_pattern,

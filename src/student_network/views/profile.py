@@ -212,7 +212,7 @@ def profile(username: str) -> object:
         cur.execute("SELECT * FROM comments WHERE post_id=%s;", (user_post[0],))
         comment_count = len(cur.fetchall())
 
-        liked = helper_posts.check_if_liked(cur, user_post[0], session["username"])
+        liked = helper_posts.check_if_liked(cur, user_post[0], session.get("username"))
 
         time = user_post[4].strftime("%d-%m-%y")
         user_posts["UserPosts"].append(
