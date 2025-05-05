@@ -236,7 +236,7 @@ def flashcards_delete(set_id) -> object:
 
     helper_flashcards.delete_set(set_id)
 
-    session["error"] = ["delete set"]
+    session["error"] = ["Xóa bộ flashcard"]
 
     return redirect("/flashcards")
 
@@ -275,7 +275,7 @@ def flashcards_save(set_id: int) -> object:
 
     helper_flashcards.save_set(set_id)
 
-    session["error"] = ["save"]
+    session["error"] = ["Lưu bộ flashcard"]
 
     return redirect("/flashcards/edit/" + str(set_id))
 

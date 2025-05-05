@@ -39,7 +39,7 @@ def post(post_id: int) -> object:
         if row is None:
             return render_template(
                 "error.html",
-                message=["This post does not exist."],
+                message=["Bài viết này không tồn tại."],
                 requestCount=helper_connections.get_connection_request_count(),
             )
         privacy = row[0]
@@ -54,7 +54,9 @@ def post(post_id: int) -> object:
                 if privacy == "private":
                     return render_template(
                         "error.html",
-                        message=["This post is private. You cannot access it."],
+                        message=[
+                            "Bài viết này là riêng tư. Bạn không thể truy cập nó."
+                        ],
                         requestCount=helper_connections.get_connection_request_count(),
                     )
                 else:
@@ -65,7 +67,9 @@ def post(post_id: int) -> object:
                         if privacy == "protected":
                             return render_template(
                                 "error.html",
-                                message=["This post is only available to connections."],
+                                message=[
+                                    "Bài viết này chỉ có thể truy cập được bằng cách kết nối."
+                                ],
                                 requestCount=helper_connections.get_connection_request_count(),
                             )
                     else:
@@ -79,7 +83,7 @@ def post(post_id: int) -> object:
                                 return render_template(
                                     "error.html",
                                     message=[
-                                        "This post is only available to close friends."
+                                        "Bài viết này chỉ có thể truy cập được với bạn thân."
                                     ],
                                     requestCount=helper_connections.get_connection_request_count(),
                                 )
@@ -87,7 +91,7 @@ def post(post_id: int) -> object:
             if privacy != "public":
                 return render_template(
                     "error.html",
-                    message=["This post is private. You cannot access it."],
+                    message=["Bài viết này là riêng tư. Bạn không thể truy cập nó."],
                     requestCount=helper_connections.get_connection_request_count(),
                 )
 
@@ -98,8 +102,8 @@ def post(post_id: int) -> object:
         )
         row = cur.fetchall()
         if len(row) == 0:
-            message.append("This post does not exist.")
-            message.append("Please ensure you have entered the name correctly.")
+            message.append("Bài viết này không tồn tại.")
+            message.append("Vui lòng đảm bảo bạn đã nhập tên chính xác.")
             session["prev-page"] = request.url
             return render_template(
                 "error.html",
@@ -270,14 +274,19 @@ def search_query() -> dict:
 
         # Filters by username, common hobbies, and interests.
         cur.execute(
-            "SELECT user_profile.username, user_hobby.hobby, "
-            "user_interests.interest FROM user_profile "
-            "LEFT JOIN user_hobby ON user_hobby.username=user_profile.username "
-            "LEFT JOIN user_interests ON "
-            "user_interests.username=user_profile.username "
-            "WHERE (user_profile.username LIKE %s) "
-            "AND (IFNULL(hobby, '') LIKE %s) AND (IFNULL(interest, '') LIKE %s) "
-            "GROUP BY user_profile.username LIMIT 10;",
+            """
+            SELECT user_profile.username, 
+                COALESCE(MIN(user_hobby.hobby), '') AS hobby, 
+                COALESCE(MIN(user_interests.interest), '') AS interest
+            FROM user_profile
+            LEFT JOIN user_hobby ON user_hobby.username = user_profile.username
+            LEFT JOIN user_interests ON user_interests.username = user_profile.username
+            WHERE user_profile.username LIKE %s
+            AND COALESCE(user_hobby.hobby, '') LIKE %s
+            AND COALESCE(user_interests.interest, '') LIKE %s
+            GROUP BY user_profile.username
+            LIMIT 10;
+            """,
             (
                 name_pattern,
                 hobby_pattern,
@@ -356,13 +365,15 @@ def submit_post() -> object:
             for username in usernames_tagged:
                 helper_general.new_notification_username(
                     username,
-                    "You have been tagged by {} in a post!".format(session["username"]),
+                    "Bạn đã được đề cập bởi {} trong bài viết!".format(
+                        session["username"]
+                    ),
                     "/post_page/{}".format(row_id),
                 )
             helper_posts.update_submission_achievements(cur)
     else:
         # Prints error message stating that the title is missing.
-        session["error"] = ["Make sure all fields are filled in correctly!"]
+        session["error"] = ["Đảm bảo tất cả các trường đã được điền chính xác!"]
 
     return redirect("/feed")
 
@@ -480,7 +491,9 @@ def submit_comment() -> object:
             if username != session["username"]:
                 helper_general.new_notification_username(
                     username,
-                    "{} has commented on your post!".format(session["username"]),
+                    "{} đã bình luận trên bài viết của bạn!".format(
+                        session["username"]
+                    ),
                     "/post_page/{}".format(post_id),
                 )
 
@@ -505,14 +518,14 @@ def delete_post() -> object:
         row = cur.fetchone()
         # check the post exists in database
         if row[0] is None:
-            message.append("Error: this post does not exist")
+            message.append("Lỗi: bài viết này không tồn tại")
         else:
             cur.execute(
                 "UPDATE posts SET privacy=%s WHERE post_id=%s;", ("deleted", post_id)
             )
             conn.commit()
 
-    message.append("Post has been deleted successfully.")
+    message.append("Bài viết đã được xóa thành công.")
     session["prev-page"] = request.url
     return render_template(
         "error.html",
@@ -541,7 +554,7 @@ def delete_comment() -> object:
         row = cur.fetchone()
         # Checks that the comment exists.
         if row[0] is None:
-            message.append("Comment does not exist.")
+            message.append("Bình luận không tồn tại.")
             session["prev-page"] = request.url
             return render_template(
                 "error.html",

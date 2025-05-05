@@ -51,7 +51,7 @@ def close_connection(username: str) -> object:
                         session["add"] = True
 
                         helper_achievements.update_close_connection_achievements(cur)
-        session["add"] = "You can't connect with yourself!"
+        session["add"] = "Bạn không thể kết nối với chính mình!"
 
     return redirect("/profile/" + username)
 
@@ -106,7 +106,7 @@ def connect_request(username: str) -> object:
                         )
                         conn.commit()
 
-        session["add"] = "You can't connect with yourself!"
+        session["add"] = "Bạn không thể kết nối với chính mình!"
 
     return redirect(session["prev-page"])
 
@@ -170,11 +170,12 @@ def accept_connection_request(username: str) -> object:
             cur = conn.cursor()
             cur.execute("SELECT * FROM accounts WHERE username=%s;", (username,))
             if cur.fetchone():
-                row = cur.execute(
+                cur.execute(
                     "SELECT * FROM connection WHERE (user1=%s AND user2=%s) OR "
                     "(user1=%s AND user2=%s);",
                     (username, session["username"], session["username"], username),
                 )
+                row = cur.fetchone()
                 if row:
                     # Gets user from database using username.
                     cur.execute(
@@ -194,7 +195,7 @@ def accept_connection_request(username: str) -> object:
 
                     helper_achievements.update_connection_achievements(cur, username)
     else:
-        session["add"] = "You can't connect with yourself!"
+        session["add"] = "Bạn không thể kết nối với chính mình!"
 
     return redirect("/requests")
 

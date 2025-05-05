@@ -66,8 +66,8 @@ def profile(username: str) -> object:
         )
         row = cur.fetchall()
         if len(row) == 0:
-            message.append("The username " + username + " does not exist.")
-            message.append(" Please ensure you have entered the name correctly.")
+            message.append("Tên tài khoản " + username + " không tồn tại.")
+            message.append("Vui lòng đảm bảo bạn đã nhập tên chính xác.")
             session["prev-page"] = request.url
             session["error"] = message
             return render_template(
@@ -109,9 +109,9 @@ def profile(username: str) -> object:
                 conn_type = helper_connections.get_connection_type(username)
                 if conn_type == "blocked":
                     message.append(
-                        "Unable to view this profile since "
+                        "Không thể xem trang cá nhân của "
                         + username
-                        + " has blocked you."
+                        + " vì bạn đã bị chặn."
                     )
                     session["prev-page"] = request.url
                     return render_template(
@@ -121,7 +121,7 @@ def profile(username: str) -> object:
                         notifications=helper_general.get_notifications(),
                     )
                 elif privacy in ("close_friends", "private"):
-                    message.append("This profile is private")
+                    message.append("Trang cá nhân này là riêng tư")
                     session["prev-page"] = request.url
                     return render_template(
                         "error.html",
@@ -132,7 +132,7 @@ def profile(username: str) -> object:
             else:
                 conn_type = "close_friend"
                 if privacy == "private":
-                    message.append("This profile is private.")
+                    message.append("Trang cá nhân này là riêng tư.")
                     session["prev-page"] = request.url
                     return render_template(
                         "error.html",
@@ -169,7 +169,7 @@ def profile(username: str) -> object:
                     sort_posts = cur.fetchall()
             else:
                 cur.execute(
-                    "SELECT * FROM posts WHERE username=%s AND privacy=='public' ",
+                    "SELECT * FROM posts WHERE username=%s AND privacy='public' ",
                     (username,),
                 )
                 sort_posts = cur.fetchall()
@@ -212,7 +212,7 @@ def profile(username: str) -> object:
         cur.execute("SELECT * FROM comments WHERE post_id=%s;", (user_post[0],))
         comment_count = len(cur.fetchall())
 
-        liked = helper_posts.check_if_liked(cur, user_post[0], session["username"])
+        liked = helper_posts.check_if_liked(cur, user_post[0], session.get("username"))
 
         time = user_post[4].strftime("%d-%m-%y")
         user_posts["UserPosts"].append(
@@ -433,14 +433,14 @@ def edit_profile() -> object:
         bio = request.form.get("bio_input")
 
         # Award achievement ID 11 - Describe yourself if necessary
-        if bio not in ("Change your bio in the settings.", ""):
+        if bio not in ("Thay đổi bio của bạn trong cài đặt.", ""):
             helper_achievements.apply_achievement(username, 11)
 
         gender = request.form.get("gender_input")
         dob_input = request.form.get("dob_input")
         dob = datetime.strptime(dob_input, "%Y-%m-%d").strftime("%Y-%m-%d")
-        hobbies_input = request.form.get("hobbies")
-        interests_input = request.form.get("interests")
+        hobbies_input = request.form.get("hobbies_input")
+        interests_input = request.form.get("interests_input")
         degree = request.form.get("degree_input")
         # Gets the individual hobbies and interests, then formats them.
         hobbies_unformatted = hobbies_input.split(",")
@@ -559,6 +559,7 @@ def edit_profile() -> object:
                     date=dob,
                     bio=bio,
                     privacy=privacy,
+                    socials=socials,
                     notifications=helper_general.get_notifications(),
                 )
 

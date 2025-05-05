@@ -84,7 +84,7 @@ def get_notifications():
         cur.execute(
             "SELECT body, date, url FROM notification WHERE username=%s ORDER "
             "BY date DESC",
-            (session["username"],),
+            (session.get("username"),),
         )
 
         row = cur.fetchall()

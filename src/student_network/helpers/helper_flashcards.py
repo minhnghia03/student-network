@@ -58,7 +58,7 @@ def delete_set(set_id):
             cur.execute("DELETE FROM question_sets WHERE set_id=%s;", (set_id,))
             conn.commit()
         else:
-            session["error"] = ["You cannot delete another user's flashcard set"]
+            session["error"] = ["Bạn không thể xóa bộ flashcard của người khác"]
 
 
 def delete_question(set_id, index):
@@ -80,7 +80,7 @@ def delete_question(set_id, index):
             )
             set_details = cur.fetchone()
             if not all(set_details[0]):
-                session["error"] = ["Question does not exist"]
+                session["error"] = ["Câu hỏi không tồn tại"]
 
             questions = set_details[0].split("|")
             answers = set_details[1].split("|")
@@ -92,7 +92,7 @@ def delete_question(set_id, index):
                 answers.pop(index)
                 answers = "|".join(answers)
             else:
-                session["error"] = ["Question does not exist"]
+                session["error"] = ["Câu hỏi không tồn tại"]
 
             cur.execute(
                 "UPDATE question_sets SET questions=%s, answers=%s WHERE set_id=%s;",
@@ -101,7 +101,7 @@ def delete_question(set_id, index):
             conn.commit()
 
         else:
-            session["error"] = ["You cannot delete another user's flashcard set"]
+            session["error"] = ["Bạn không thể xóa bộ flashcard của người khác"]
 
 
 def save_set(set_id):
@@ -216,7 +216,7 @@ def add_card(set_id):
             conn.commit()
 
         else:
-            session["error"] = ["You cannot add cards to another user's flashcard set"]
+            session["error"] = ["Bạn không thể thêm câu hỏi vào bộ flashcard của người khác"]
 
 
 def add_play(cur, set_id):

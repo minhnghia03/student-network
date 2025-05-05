@@ -46,7 +46,7 @@ def apply_achievement(username: str, achievement_id: int):
             conn.commit()
 
             helper_general.new_notification(
-                "You have received an achievement badge!", "/achievements"
+                "Bạn đã nhận được một huy hiệu mới!", "/achievements"
             )
 
 

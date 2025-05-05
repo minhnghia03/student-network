@@ -275,6 +275,10 @@
     margin-bottom: 5px;
   }
 
+  .message-info-sent {
+    align-self: flex-end;
+  }
+
   .message-sender {
     font-weight: 600;
     font-size: 0.9rem;
@@ -583,7 +587,7 @@
       {% for message in messages %}
       <div class="message-row">
         {% if message[1] != prev %}
-        <div class="message-info">
+        <div class="message-info {% if message[1] == username %}message-info-sent{% else %}message-info-received{% endif %}">
           <div class="message-sender">{{message[1]}}</div>
           <div class="message-time">{{message[2] if message[2] else 'Vừa xong'}}</div>
         </div>
@@ -770,12 +774,13 @@
   function NewChatMessage(msg) {
     const isSentByMe = msg.sender_username === username;
     const bubbleClass = isSentByMe ? "message-bubble-sent" : "message-bubble-received";
+    const infoClass = isSentByMe ? "message-info-sent" : "message-info-received"
     let showInfo = lastMessageUsername !== msg.sender_username;
     let timestamp = msg.timestamp || 'Vừa xong';
 
     // Message info HTML
     let infoHTML = showInfo ?
-      `<div class="message-info">
+      `<div class="message-info ${infoClass}">
         <div class="message-sender">${msg.sender_username}</div>
         <div class="message-time">${timestamp}</div>
       </div>` : '';
